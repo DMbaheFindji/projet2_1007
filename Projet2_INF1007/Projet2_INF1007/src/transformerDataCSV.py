@@ -35,7 +35,7 @@ try:
             longueur=len(password)
             #On parcours le mot et regrade s'il y a des majuscules
             contientMajuscule=1 if any(c.isupper() for c in password) else 0
-            contientChiffre=1 if any(c.isdigit for c in password) else 0
+            contientChiffre=1 if any(c.isdigit() for c in password) else 0
             contientSpecial=1 if any(not c.isalnum() for c in password) else 0
            
 
