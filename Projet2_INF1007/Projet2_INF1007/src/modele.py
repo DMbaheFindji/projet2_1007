@@ -72,3 +72,93 @@ def separer(self, X: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, np.ndarray,
         #y_test = la force de ces mdp
         return train_test_split(X, y, test_size=0.2, random_state=GRAINE_ALEATOIRE)
 
+
+
+
+
+def calculer_reference(self, y_train: np.ndarray, y_test: np.ndarray) -> float:
+        """bareme de comparaison pour le modele 
+        la reference ne regarde jamais les caracteristique repere seulement
+        la force la plus frequente
+
+
+        Args:
+            y_train: étiquettes d'entraînement - pour trouver la classe majoritaire
+            y_test: étiquettes de test - pour mesurer la référence
+
+        Returns:
+            L'exactitude de la référence sur l'ensemble de test.
+        """
+
+        # trouver la classe majoritaire - ce qui devient la reference triviale
+        valeurs, comptes = np.unique(y_train, return_counts=True)
+        classe_majoritaire = valeurs[np.argmax(comptes)]
+       
+       
+       # predire la classe pour tout les mdp du test 
+        predictions_triviales = np.full_like(y_test, classe_majoritaire)
+       
+       # mesure son exactitude
+        self.exactitude_reference = float(accuracy_score(y_test, predictions_triviales))
+        return self.exactitude_reference
+
+
+
+@staticmethod 
+def exactitude_numpy(predictions: np.ndarray, y_vrai: np.ndarray) -> float:
+        """Calcule l'exactitude nous-mêmes avec NumPy (calcul vectorisé, sans boucle).
+
+        exactitude -> proportions des predictions correcte
+         verifier si le resultat en utilisant le calcul vectorise est 
+         pareille que le resulat avec scikit-learn.
+
+
+        Args:
+            predictions: prédictions du modèle.
+            y_vrai: étiquettes réelles.
+
+        Returns:
+            La proportion de prédictions correctes.
+        """
+        #compare element par element dun seul coup
+        # donne un tableau true/false (en 0 et 1)
+        comparaisons = predictions == y_vrai
+
+        # faire la moyenne 
+        moyenne = np.mean(comparaisons)
+
+
+        return float(moyenne)
+
+
+  
+def predire(self, X: np.ndarray) -> tuple[str, float]:
+        """Prédit la force d'un mot de passe décrit par ses caractéristiques.
+
+        methode que linterface appel
+
+
+        Args:
+            X: une seule ligne de caractéristiques.
+
+        Returns:
+            La classe prédite (0/1/2) et la confiance du modèle.
+        
+        """
+        
+        # demander la classe predite
+        #[0] signifie quon prend le premierelement de la reponse
+        #car ya quune prediction par mdp
+        prediction = self._classifieur.predict(X)[0]
+
+
+        # demande certitude du modele
+        #retourne un tableau de probabilite pour chaque strength 
+        probabilites = self._classifieur.predict_proba(X)[0]
+
+        #extrait la porbabilite la plus eleve (faible, moyen, fort)
+        confiance = float(np.max(probabilites))
+
+       
+        # pour laffichage de la prediction 
+        return str(prediction), confiance
