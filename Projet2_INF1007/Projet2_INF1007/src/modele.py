@@ -162,3 +162,65 @@ def predire(self, X: np.ndarray) -> tuple[str, float]:
        
         # pour laffichage de la prediction 
         return str(prediction), confiance
+
+
+
+def sauvegarder(self, chemin_modele: str = CHEMIN_MODELE,chemin_metadonnees: str = CHEMIN_METADONNEES) -> None:
+        """Enregistre le modèle (joblib) et ses métadonnées (JSON).
+
+        L'interface se construira à partir du JSON : le modèle n'est
+        jamais ré-entraîné au lancement de l'application.
+
+        Args:
+            chemin_modele: chemin du fichier .joblib à écrire.
+            chemin_metadonnees: chemin du fichier .json à écrire.
+
+        Raises:
+            ModeleIntrouvableError: si le modèle n'a jamais été entraîné.
+        """
+        if not hasattr(self._classifieur, "classes_"):
+            raise ModeleIntrouvableError(
+                "Impossible de sauvegarder : le modèle n'est pas encore entraîné."
+            )
+        os.makedirs(os.path.dirname(chemin_modele), exist_ok=True)
+        joblib.dump(self._classifieur, chemin_modele)
+
+        metadonnees = {
+            "colonnes": COLONNES_ENTREE,
+            "numeriques": {c: [0, 0] for c in COLONNES_ENTREE},  # bornes à remplir
+            "categorielles": {},
+            "classes": [str(c) for c in self._classifieur.classes_],
+            "metrique": {
+                "exactitude": self.exactitude_test,
+                "reference": self.exactitude_reference,
+            },
+        }
+        with open(chemin_metadonnees, "w", encoding="utf-8") as sortie:
+            json.dump(metadonnees, sortie, ensure_ascii=False, indent=4)
+
+@classmethod
+def charger(cls, chemin_modele: str = CHEMIN_MODELE) -> "Modele":
+        """Charge un modèle sauvegardé (utilisé par l'interface).
+
+        Args:
+            chemin_modele: chemin du fichier .joblib.
+
+        Returns:
+            Une instance de Modele prête à prédire.
+
+        Raises:
+            ModeleIntrouvableError: si le fichier .joblib n'existe pas.
+        """
+        if not os.path.exists(chemin_modele):
+            raise ModeleIntrouvableError(f"Modèle introuvable : {chemin_modele}")
+        modele = cls()
+        modele._classifieur = joblib.load(chemin_modele)
+        return modele
+
+   # pour POO
+def __str__(self) -> str:
+        """Représentation lisible du modèle, pour le README et les messages."""
+        return (
+            f"Modele RandomForest — exactitude test : {self.exactitude_test:.2%}, "
+            f"référence : {self.exactitude_reference:.2%}"
+        )
