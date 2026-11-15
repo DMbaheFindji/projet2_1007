@@ -17,9 +17,9 @@ from exception import (DonneeInvalideError, EntreeInvalideError,
                         ModeleNonEntraineError)
 
 
-DOSSIER_PROJET = os.path.dirname(os.path.abspath(__file__)) # dossier ou se trouve le script modele.py
-DOSSIER_DONNEES = os.path.join(DOSSIER_PROJET, 'donnees') # la ou se trouve donnees.csv
+DOSSIER_PROJET = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DOSSIER_MODELES = os.path.join(DOSSIER_PROJET, 'modeles')# la ou on va ecrire le modele entraine
+DOSSIER_DONNEES = os.path.join(DOSSIER_PROJET, 'donnees')
 
 cheminFichierCsv = os.path.join(DOSSIER_DONNEES, 'donnees.csv') # chemin complet du CSV dentree 
 cheminModele = os.path.join(DOSSIER_MODELES, 'modele.joblib') # le modele entrainee 
@@ -32,10 +32,11 @@ graineAleatoire = 42 # pour que les reultat sois reproductible
 COLONNES_ENTREE = ['longeur', 'contientMajuscule', 'contientChiffre', 'contientSpecial'] # les 4 caracteristique de prediction c les X
 COLONNE_CIBLE = 'strength' # cest le y variable a predire  
 ETIQUETTES_FORCE = {0: 'Faible', 1: 'Moyen', 2: 'Fort'} # dictionnaire de traduction
+COLONNES_REQUISES = ['password'] + COLONNES_ENTREE + [COLONNE_CIBLE]
 
 
 
-
+#TODO: update docstring
 
 def chargerDonnees(chemin: str) -> pd.DataFrame: 
     """Charge le CSV avec pandas et nettoie les données.
@@ -50,6 +51,11 @@ def chargerDonnees(chemin: str) -> pd.DataFrame:
             f'Fichier introuvable : {chemin}. '
             f'Génère-le d\'abord avec la classe Transformer (donnees.py).')
     df = pd.read_csv(chemin) 
+# verification des colonnes manquantes
+    manquantes = [c for c in COLONNES_REQUISES if c not in df.columns]
+    if manquantes:
+        raise DonneeInvalideError(f'Colonnes manquantes dans {chemin} : {manquantes}')
+    
     df = df.dropna() # au cas ou si une ligne contient des valeurs manquante
     df = df[df['password'].astype(str).str.len() > 0] # enleve si les mdp est vides 
     df = df.drop_duplicates() # supprime ligne identique 
@@ -194,7 +200,15 @@ class Modele:
         probabilités de chaque classe (indice de confiance pour l'interface).
         Lève RuntimeError si le modèle n'a pas encore été entraîné.
         """
-     
+
+        ## exception gestion si il ny a pas dentree valide
+        if longueur < 1:
+            raise EntreeInvalideError(f'La longueur doit être au moins 1 (reçu : {longueur}).')
+        for nom, valeur in (('contientMajuscule', contientMajuscule),
+                            ('contientChiffre', contientChiffre),
+                            ('contientSpecial', contientSpecial)):
+            if valeur not in (0, 1):
+                raise EntreeInvalideError(f'{nom} doit valoir 0 ou 1 (reçu : {valeur}).')
         #entree de lutilisateur
         entree = pd.DataFrame([[longueur, contientMajuscule, contientChiffre, contientSpecial]],
                               columns=COLONNES_ENTREE)
@@ -228,7 +242,7 @@ class Modele:
         Lève RuntimeError si le modèle n'a pas encore été entraîné.
         """
         if not self._entraine:
-            raise RuntimeError('Le modèle doit être entraîné avant d\'être sauvegardé.')
+            raise ModeleNonEntraineError('Le modèle doit être entraîné avant d\'être sauvegardé.')
         os.makedirs(DOSSIER_MODELES, exist_ok=True)
         joblib.dump(self._arbre, cheminModele)
         metadonnees = {
@@ -252,7 +266,7 @@ class Modele:
     def predireLot(self, X: pd.DataFrame) -> np.ndarray:
       """Prédit la classe de chaque ligne de X."""
       if not self._entraine:
-        raise RuntimeError('Le modèle doit être entraîné avant de prédire.')
+        raise  ModeleNonEntraineError('Le modèle doit être entraîné avant de prédire.')
       return self._arbre.predict(X)
 
 

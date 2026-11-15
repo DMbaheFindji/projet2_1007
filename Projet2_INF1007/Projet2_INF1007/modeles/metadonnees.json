@@ -1,0 +1,66 @@
+{
+  "modele": "Arbre de décision (max_depth=10, random_state=42)",
+  "colonnesEntree": [
+    "longeur",
+    "contientMajuscule",
+    "contientChiffre",
+    "contientSpecial"
+  ],
+  "colonneCible": "strength",
+  "classesCible": {
+    "0": "Faible",
+    "1": "Moyen",
+    "2": "Fort"
+  },
+  "variables": {
+    "longeur": {
+      "type": "numerique",
+      "min": 4,
+      "max": 174
+    },
+    "contientMajuscule": {
+      "type": "categorielle",
+      "valeurs": [
+        0,
+        1
+      ]
+    },
+    "contientChiffre": {
+      "type": "categorielle",
+      "valeurs": [
+        0,
+        1
+      ]
+    },
+    "contientSpecial": {
+      "type": "categorielle",
+      "valeurs": [
+        0,
+        1
+      ]
+    }
+  },
+  "metriques": {
+    "exactitude": 0.8208333333333333,
+    "f1Macro": 0.820082312231018,
+    "exactitudeNumpy": 0.8208333333333333,
+    "exactitudeReference": 0.33416666666666667,
+    "matriceConfusion": [
+      [
+        1363,
+        635,
+        0
+      ],
+      [
+        21,
+        1932,
+        52
+      ],
+      [
+        266,
+        101,
+        1630
+      ]
+    ]
+  }
+}
