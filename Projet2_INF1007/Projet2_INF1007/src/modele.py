@@ -13,6 +13,9 @@ from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 
+from exception import (DonneeInvalideError, EntreeInvalideError,
+                        ModeleNonEntraineError)
+
 
 DOSSIER_PROJET = os.path.dirname(os.path.abspath(__file__)) # dossier ou se trouve le script modele.py
 DOSSIER_DONNEES = os.path.join(DOSSIER_PROJET, 'donnees') # la ou se trouve donnees.csv
@@ -51,7 +54,7 @@ def chargerDonnees(chemin: str) -> pd.DataFrame:
     df = df[df['password'].astype(str).str.len() > 0] # enleve si les mdp est vides 
     df = df.drop_duplicates() # supprime ligne identique 
     if df.empty:
-        raise ValueError(f'Aucune donnée exploitable dans {chemin}')
+        raise DonneeInvalideError(f'Aucune donnée exploitable dans {chemin}')
     return df # retourne un tableau de donnees 
 
 
@@ -191,7 +194,7 @@ class Modele:
         probabilités de chaque classe (indice de confiance pour l'interface).
         Lève RuntimeError si le modèle n'a pas encore été entraîné.
         """
-
+     
         #entree de lutilisateur
         entree = pd.DataFrame([[longueur, contientMajuscule, contientChiffre, contientSpecial]],
                               columns=COLONNES_ENTREE)
