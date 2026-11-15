@@ -36,7 +36,7 @@ COLONNES_REQUISES = ['password'] + COLONNES_ENTREE + [COLONNE_CIBLE]
 
 
 
-#TODO: update docstring
+#TODO: update docstring enleve les test et juste mettre en 
 
 def chargerDonnees(chemin: str) -> pd.DataFrame: 
     """Charge le CSV avec pandas et nettoie les données.
@@ -113,6 +113,7 @@ def exactitudeNumpy(yReel: pd.Series, yPredit: np.ndarray) -> float:
     return float(np.mean(comparaison))
 
 
+#TODO: changer la matrice 
 def sauvegarderMatriceConfusion(yTest: pd.Series, yPredit: np.ndarray, chemin: str) -> None:
     """Enregistre avec savefig la matrice de confusion sur l'ensemble de test.
     matrice de confusion: montre ou le modele se trompe: pour chaque vraie strenght combien de fois 
@@ -162,6 +163,7 @@ class Modele:
     #profondeur de l'abre 
 
     def __init__(self, profondeurMax: int = 10, graine: int = graineAleatoire) -> None:
+        #random state pour rendre reporductioible les choix aleatoire durant la construction de larbre 
         self._arbre = DecisionTreeClassifier(max_depth=profondeurMax, random_state=graine) # creation de labre de decision pas encore entraine sklearn
         self._metriques: dict = {} # recois les score dans entrainer
         self._reference: float = 0.0 # recois le score du modele bidon
