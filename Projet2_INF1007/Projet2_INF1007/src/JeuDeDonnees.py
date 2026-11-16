@@ -68,7 +68,7 @@ class JeuDeDonnees:
                     premierCaractere= 'lettre' if f.isalpha() else ('chiffre' if f.isdigit() else 'special')
                 
 
-                    contenuModifiee=f'{password},{longueur},{nbMajuscule},{nbChiffre},{nbSpeciaux},,{premierCaractere},{strength}\n'#C'est ici que les virgules pour le fichier csv sont ajoutées
+                    contenuModifiee=f'{password},{longueur},{nbMajuscule},{nbChiffre},{nbSpeciaux},{premierCaractere},{strength}\n'#C'est ici que les virgules pour le fichier csv sont ajoutées
                     lignes_converties.append(contenuModifiee)
                     compteur+=1
 
