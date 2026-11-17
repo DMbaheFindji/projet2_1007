@@ -69,12 +69,10 @@ class Application(QMainWindow):
             layout_principal.addWidget(widget_droite, stretch=1)
 
     def executer_prediction(self):
-            # Action lors du clic sur le bouton "Prédire"
             password = self.input_password.text()
             
             if not password:
                 self.label_resultat.setText("<font color='red'>Veuillez entrer un mot de passe !</font>")
                 return
 
-            # Simulation du résultat (ici vous brancherez votre modèle plus tard)
             self.label_resultat.setText(f"<b>Résultat :</b> Mot de passe analysé avec succès !")
