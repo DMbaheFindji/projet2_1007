@@ -115,53 +115,46 @@ def exactitudeNumpy(yReel: pd.Series, yPredit: np.ndarray) -> float:
 
 #TODO: changer la matrice 
 def sauvegarderMatriceConfusion(yTest: pd.Series, yPredit: np.ndarray, chemin: str) -> None:
-    """Enregistre avec savefig la matrice de confusion sur l'ensemble de test.
-    matrice de confusion: montre ou le modele se trompe: pour chaque vraie strenght combien de fois 
-    elle a ete predite dans chaque strenght 
+
+    """Enregistre avec savefig un graphique en barres de la réussite par force.
+
+    Pour chaque vraie force (Faible, Moyen, Fort), la barre donne le
+    pourcentage de mots de passe que le modèle a bien classés. La ligne
+    pointillée est l'exactitude globale.
     """
-
-    #construction du tableau carre
-    # explication : cm[i][j] = nombre de lignes dont la vraie classe est i et la prédite est j.
-    #Exemple : cm[0][2] = 150 signifie "150 mots de passe vraiment Faibles (0) ont été prédits Fort (2)".
-    #Les bonnes prédictions sont sur la diagonale (cm[0][0], cm[1][1], cm[2][2]).
-    cm = confusion_matrix(yTest, yPredit) 
-
-
-    # recuperation de toute les strenght present et traduction en mots
+    # cm[i][j] = nombre de lignes dont la vraie classe est i et la prédite est j
+    cm = confusion_matrix(yTest, yPredit)
     classes = sorted(set(np.asarray(yTest)) | set(np.asarray(yPredit)))
     etiquettes = [ETIQUETTES_FORCE[int(c)] for c in classes]
 
+    # diagonale = bien classés, somme d'une ligne = total de cette vraie force
+    totaux = cm.sum(axis=1)
+    reussite = np.diag(cm) / np.where(totaux == 0, 1, totaux)
+    exactitude = np.trace(cm) / cm.sum()
 
-   # creation de la figure
-   # heat map
     fig, ax = plt.subplots()
-    image = ax.imshow(cm, cmap='Blues')
-    ax.set_xticks(range(len(etiquettes)), etiquettes)
-    ax.set_yticks(range(len(etiquettes)), etiquettes)
-    ax.set_xlabel('Prédit')
-    ax.set_ylabel('Réel')
-    ax.set_title('Matrice de confusion (ensemble de test)')
-    
-    # TODO: ajouter explication de la boucle
-    for i in range(cm.shape[0]):
-        for j in range(cm.shape[1]):
-            ax.text(j, i, str(cm[i, j]), ha='center', va='center')
-    fig.colorbar(image)
+    barres = ax.bar(etiquettes, reussite, color='#2A52D6')
+    ax.bar_label(barres, labels=[f'{v:.0%}' for v in reussite])
+    ax.axhline(exactitude, color='gray', linestyle='--',
+               label=f'Moyenne globale : {exactitude:.0%}')
+    ax.set_ylim(0, 1.1)
+    ax.yaxis.set_major_formatter(lambda y, _: f'{y:.0%}')
+    ax.set_xlabel('Force réelle du mot de passe')
+    ax.set_ylabel('Bien classés')
+    ax.set_title('Réussite du modèle par force (ensemble de test)')
+    ax.legend()
     fig.savefig(chemin, bbox_inches='tight')
     plt.close(fig)
 
 
-
 class Modele:
     """Modèle de classification de la force d'un mot de passe.
-
     Encapsule un arbre de décision entraîné sur les caractéristiques
     extraites du mot de passe. Attributs protégés : l'arbre, les métriques
     et l'état d'entraînement.
     """
 
     #profondeur de l'abre 
-
     def __init__(self, profondeurMax: int = 10, graine: int = graineAleatoire) -> None:
         #random state pour rendre reporductioible les choix aleatoire durant la construction de larbre 
         self._arbre = DecisionTreeClassifier(max_depth=profondeurMax, random_state=graine) # creation de labre de decision pas encore entraine sklearn

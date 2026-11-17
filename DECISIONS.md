@@ -10,7 +10,26 @@ Question : Pourquoi ce dataset ?
 
 
 
-Danielle:Graphique 1
-Alia:Modele 
+Decisions prises:
 
-ensemble : Interface
+### Pourquoi scikit-learn ?
+
+ Il fournit tout ce dont le projet a besoin dans une seule bibliothèque :
+  `DecisionTreeClassifier` (modèle), `train_test_split` (séparation avec graine fixée
+  et classes stratifiées), `DummyClassifier` (référence), `accuracy_score`, `f1_score`
+  et `confusion_matrix` (évaluation), et `joblib` pour sauvegarder le modèle entraîné.
+
+###  décision de l'arbre de décision:
+
+modele envisagé:
+- foret aleatoire: souvent plus precise mais plus lourde et difficile
+-k plus proche du voisins: comparaison de distaance entre variables d'échelle tres differentes 
+-Arbre de décision (retenu):Gère sans préparation des variables numériques et binaires, prédit directement trois classes, donne des probabilités (predict), plus comprehensif
+
+### profondeur maximale choisi:
+- depth = 10 pour eviter le surapprentissage
+
+### choix pour le graphique 2:
+- Heat map de la matrice de confusion = lecture plus melangeante
+- courbes = ne montre pas bien le pourecnetage de reussite (fait moin de sens)
+- barres de réussite par force (retenu): bonne lisibilité et intuitive
