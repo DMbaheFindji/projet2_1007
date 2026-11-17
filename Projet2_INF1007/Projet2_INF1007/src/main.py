@@ -1,42 +1,33 @@
-from exception import DonneeInvalideError, EntreeInvalideError
-from modele import (Modele, chargerDonnees, cheminFichierCsv,
-                    cheminMatriceConfusion, sauvegarderMatriceConfusion,
-                    separerDonnees)
+from JeuDeDonnees import JeuDeDonnees
+import sys
+from PyQt6.QtWidgets import QApplication
+from interface import Application
 
 
-def main() -> None:
-    # 1. Charger et nettoyer les données
-    try:
-        df = chargerDonnees(cheminFichierCsv)
-    except (FileNotFoundError, DonneeInvalideError) as erreur:
-        print(f'Erreur : {erreur}')
-        return
-    print(f'{len(df)} lignes chargées')
+def preparer_donnee()->None:
+    
+    monJeuDonnee=JeuDeDonnees('..\\..','production.tsv','donnees.csv',limiteLigne=30000)
 
-    # 2. Séparer, entraîner et évaluer
-    XTrain, XTest, yTrain, yTest = separerDonnees(df)
-    modele = Modele()
-    metriques = modele.entrainer(XTrain, yTrain, XTest, yTest)
-    print(modele)
-    print(f"Exactitude : {metriques['exactitude']:.3f}")
-    print(f"Référence  : {metriques['exactitudeReference']:.3f}")
-    print(f"F1 macro   : {metriques['f1Macro']:.3f}")
+    cheminCSVFinal=monJeuDonnee.convertirETdevelopper()
 
-    # 3. Sauvegarder le modèle, les métadonnées et la matrice de confusion
-    modele.sauvegarder(df)
-    sauvegarderMatriceConfusion(yTest, modele.predireLot(XTest), cheminMatriceConfusion)
-    print('Fichiers écrits dans le dossier modeles/')
+    if cheminCSVFinal:
+        print(f'Le fichier converti est prêt : {cheminCSVFinal}')
 
-    # 4. Prédiction normale
-    etiquette, probas = modele.predire(12, 1, 1, 0)
-    print(f'Prédiction : {etiquette} {probas}')
-
-    # 5. Saisie invalide : doit afficher un message, pas planter
-    try:
-        modele.predire(0, 1, 1, 0)
-    except EntreeInvalideError as erreur:
-        print(f'Saisie refusée : {erreur}')
+    df=monJeuDonnee.triage_ET_charger_Donnee(cheminCSVFinal)
 
 
-if __name__ == '__main__':
+    #Création du graphique1
+    graphique1=monJeuDonnee.creationGraphique1(df)
+
+def main()-> None:
+    application=QApplication(sys.argv)
+    fenetre = Application()
+    fenetre.show()
+    sys.exit(application.exec())
+
+
+#Création de donnees.csv et récupération de son chemin 
+if __name__ == "__main__":
     main()
+
+    
