@@ -306,3 +306,28 @@ class Modele:
             f'entraîné={self._entraine}, '
             f'exactitude={exactitude})'
         )
+
+def chargerMetadonnees(chemin:str=cheminMetadonnees)-> dict:
+    """
+    Cette fonction ouvre et lit le fichier metadonnee.json
+    """
+        
+    if not os.path.isfile(chemin):
+        raise FileNotFoundError(f'Le fichier métadonné est introuvable : {chemin}')
+        
+
+    with open (chemin,"r",encoding="utf-8") as f:
+        return json.load(f)#Retourne un dictionnaire 
+
+
+
+def chargerModele(cls=Modele,chemin:str=cheminModele)->'Modele':
+    """Cette fonction reconstruit le fichier joblib sauvegardé du modèle pour pouvoir reutiliser le modele deja entrainé"
+    """
+    if not os.path.isfile(chemin):
+        raise FileNotFoundError(f'Le modèle est introuvable : {chemin}')
+
+    modele=cls()
+    modele._arbre=joblib.load(chemin)
+    modele._entraine=True
+    return modele
