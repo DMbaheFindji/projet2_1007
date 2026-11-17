@@ -62,7 +62,7 @@ class JeuDeDonnees:
                     #On parcours le mot et regrade s'il y a des majuscules, chiffres ou carcatères spéciaux
                     nbMajuscule= sum( 1 for c in password if c.isupper())
                     nbChiffre= sum( 1 for c in password if c.isdigit())
-                    nbSpeciaux= sum( 1 for c in password if c.isalnum())
+                    nbSpeciaux= sum( 1 for c in password if not c.isalnum())
 
                     f=password[0]
                     premierCaractere= 'lettre' if f.isalpha() else ('chiffre' if f.isdigit() else 'special')
