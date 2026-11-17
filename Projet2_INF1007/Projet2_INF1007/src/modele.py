@@ -29,15 +29,14 @@ cheminMatriceConfusion = os.path.join(DOSSIER_MODELES, 'matrice_confusion.png') 
 
 graineAleatoire = 42 # pour que les reultat sois reproductible
 
-COLONNES_ENTREE = ['longeur', 'contientMajuscule', 'contientChiffre', 'contientSpecial'] # les 4 caracteristique de prediction c les X
-COLONNE_CIBLE = 'strength' # cest le y variable a predire  
+COLONNES_NUMERIQUES = ['longueur', 'nbMajuscule', 'nbChiffre', 'nbSpecial'] # variables numeriques
+COLONNE_CATEGORIELLE = 'premierCaractere' # variable categorielle (du texte)
+VALEURS_PREMIER_CARACTERE = ['lettre', 'chiffre', 'special'] # valeurs permises de premierCaractere
+COLONNES_ENTREE = COLONNES_NUMERIQUES + [COLONNE_CATEGORIELLE]
+COLONNE_CIBLE = 'strength' # cest le y variable a predire
 ETIQUETTES_FORCE = {0: 'Faible', 1: 'Moyen', 2: 'Fort'} # dictionnaire de traduction
 COLONNES_REQUISES = ['password'] + COLONNES_ENTREE + [COLONNE_CIBLE]
 
-COLONNES_NUMERIQUES = ['longueur', 'nombretMajuscule', 'nombreChiffre', 'nombreSpecial']
-COLONNE_CATEGORIELLE = 'premierCaractere'
-VALEURS_PREMIER_CARACTERE = ['lettre', 'chiffre', 'special']
-COLONNES_ENTREE = COLONNES_NUMERIQUES + [COLONNE_CATEGORIELLE]
 
 #TODO: update docstring enleve les test et juste mettre en 
 
@@ -82,8 +81,16 @@ def separerDonnees(df: pd.DataFrame, tailleTest: float = 0.2) -> tuple[pd.DataFr
                             random_state=graineAleatoire, stratify=y) #random test pour melange de la meme maniere les donnes a chaque fois
 # stratify garder les meme proportion de classes dans test et entrainment pour que levaluation soit plus exact
 
+# ajout de encoder pour conevrtir le premier caractere 
+def encoderEntrees(X: pd.DataFrame) -> pd.DataFrame:
+    """Transforme les 5 caractéristiques en colonnes toutes numériques.
 
-
+    premierCaractere (lettre, chiffre, special) devient trois colonnes 0/1.
+    """
+    encode = X[COLONNES_NUMERIQUES].copy()
+    for valeur in VALEURS_PREMIER_CARACTERE:
+        encode[f'{COLONNE_CATEGORIELLE}_{valeur}'] = (X[COLONNE_CATEGORIELLE] == valeur).astype(int)
+    return encode
 
 def calculerReference(XTrain: pd.DataFrame, yTrain: pd.Series, XTest: pd.DataFrame, yTest: pd.Series) -> float:
     # recoit les 4 morceaux de separeDonnee
@@ -151,141 +158,179 @@ def sauvegarderMatriceConfusion(yTest: pd.Series, yPredit: np.ndarray, chemin: s
 
 
 class Modele:
-    """Modèle de classification de la force d'un mot de passe.
-    Encapsule un arbre de décision entraîné sur les caractéristiques
-    extraites du mot de passe. Attributs protégés : l'arbre, les métriques
-    et l'état d'entraînement.
-    """
 
-    #profondeur de l'arbre 
-    def __init__(self, profondeurMax: int = 10, graine: int = graineAleatoire) -> None:
-        #random state pour rendre reporductioible les choix aleatoire durant la construction de larbre 
-        self._arbre = DecisionTreeClassifier(max_depth=profondeurMax, random_state=graine) # creation de labre de decision pas encore entraine sklearn
-        self._metriques: dict = {} # recois les score dans entrainer
-        self._reference: float = 0.0 # recois le score du modele bidon
-        self._entraine = False # pour savoir si le modele est entrainer 
+    def __init__(self, profondeurMax: int = 10,
+                 graine: int = graineAleatoire) -> None:
 
-    
-    
-    
-    # recois les 4 morceaux de separerDonne
-    def entrainer(self, XTrain: pd.DataFrame, yTrain: pd.Series, XTest: pd.DataFrame, yTest: pd.Series) -> dict:
-        """Entraîne l'arbre puis évalue sur l'ensemble de test uniquement.
+        self._arbre = DecisionTreeClassifier(
+            max_depth=profondeurMax,
+            random_state=graine
+        )
 
-        Stocke la référence (classe majoritaire) et renvoie le dictionnaire
-        des métriques : exactitude, F1 macro, vérification NumPy, matrice de
-        confusion et exactitude de la référence.
-        """
-        self._arbre.fit(XTrain, yTrain) #apprentissage cherche tout seul des regles
-        self._entraine = True 
-        self._reference = calculerReference(XTrain, yTrain, XTest, yTest) # calculer le score de reference
-        yPredit = self.predireLot(XTest) #prediction su rle test uniquementaz   `q1`
-       
-       
+        self._metriques = {}
+        self._entraine = False
+        self._yTest = None
+        self._yPredit = None
+
+    def entrainer(self, df: pd.DataFrame) -> dict:
+        """Sépare les données, entraîne le modèle et calcule les métriques."""
+
+        # Séparation du DataFrame en données d'entraînement et de test
+        XTrain, XTest, yTrain, yTest = separerDonnees(df)
+
+        # Entraînement de l'arbre
+        self._arbre.fit(encoderEntrees(XTrain), yTrain)
+        self._entraine = True
+
+        # Prédictions sur les données de test
+        yPredit = self.predireLot(XTest)
+
+        # Conservation des résultats pour la matrice de confusion
+        self._yTest = yTest
+        self._yPredit = yPredit
+
+        # Calcul des métriques
         self._metriques = {
-            'exactitude': float(accuracy_score(yTest, yPredit)), # metrique princinpale
-            'f1Macro': float(f1_score(yTest, yPredit, average='macro')), # la moyenne sur les 3 strentgth
-            'exactitudeNumpy': exactitudeNumpy(yTest, yPredit), # doit etre identique a exactitude
-            'exactitudeReference': self._reference, #score du dummyclassifier
-            'matriceConfusion': confusion_matrix(yTest, yPredit).tolist(), # tableau pour lecrire en JSON
+            'exactitude': float(accuracy_score(yTest, yPredit)),
+            'f1Macro': float(f1_score(yTest, yPredit, average='macro')),
+            'exactitudeNumpy': exactitudeNumpy(yTest, yPredit),
+            'exactitudeReference': calculerReference(
+                XTrain, yTrain, XTest, yTest
+            ),
+            'matriceConfusion': confusion_matrix(
+                yTest, yPredit
+            ).tolist()
         }
+
         return self.metriques
 
-    def predire(self, longueur: int, contientMajuscule: int, contientChiffre: int, contientSpecial: int) -> tuple[str, dict[str, float]]:
-        """Prédit la force d'un mot de passe à partir de ses caractéristiques.
+    def predireLot(self, X: pd.DataFrame) -> np.ndarray:
+        """Prédit la classe de chaque ligne de X."""
 
-        Renvoie l'étiquette lisible (Faible, Moyen ou Fort) et les
-        probabilités de chaque classe (indice de confiance pour l'interface).
-        Lève RuntimeError si le modèle n'a pas encore été entraîné.
-        """
+        if not self._entraine:
+            raise ModeleNonEntraineError(
+                'Le modèle doit être entraîné avant de prédire.'
+            )
 
-        ## exception gestion si il ny a pas dentree valide
+        return self._arbre.predict(encoderEntrees(X))
+
+    def predire(self, longueur: int, nbMajuscule: int,
+                nbChiffre: int, nbSpecial: int,
+                premierCaractere: str):
+
         if longueur < 1:
-            raise EntreeInvalideError(f'La longueur doit être au moins 1 (reçu : {longueur}).')
-        for nom, valeur in (('contientMajuscule', contientMajuscule),
-                            ('contientChiffre', contientChiffre),
-                            ('contientSpecial', contientSpecial)):
-            if valeur not in (0, 1):
-                raise EntreeInvalideError(f'{nom} doit valoir 0 ou 1 (reçu : {valeur}).')
-        #entree de lutilisateur
-        entree = pd.DataFrame([[longueur, contientMajuscule, contientChiffre, contientSpecial]],
-                              columns=COLONNES_ENTREE)
-        
-        
-        # retroune le tableau numpy
-        prediction = int(self.predireLot(entree)[0])
-        #retourne le tableaude probabilite
-        probabilites = self._arbre.predict_proba(entree)[0]
+            raise EntreeInvalideError(
+                'La longueur doit être au moins 1.'
+            )
 
-        #donne lrodre des colonnes dans predict_proba
+        for nom, valeur in (
+            ('nbMajuscule', nbMajuscule),
+            ('nbChiffre', nbChiffre),
+            ('nbSpecial', nbSpecial)
+        ):
+            if valeur < 0:
+                raise EntreeInvalideError(
+                    f'{nom} ne peut pas être négatif.'
+                )
+
+        if nbMajuscule + nbChiffre + nbSpecial > longueur:
+            raise EntreeInvalideError(
+                'Le total des caractéristiques dépasse la longueur.'
+            )
+
+        if premierCaractere not in VALEURS_PREMIER_CARACTERE:
+            raise EntreeInvalideError(
+                f'premierCaractere doit valoir {VALEURS_PREMIER_CARACTERE}.'
+            )
+
+        entree = pd.DataFrame(
+            [[longueur, nbMajuscule, nbChiffre,
+              nbSpecial, premierCaractere]],
+            columns=COLONNES_ENTREE
+        )
+
+        prediction = int(self.predireLot(entree)[0])
+
+        probabilites = self._arbre.predict_proba(
+            encoderEntrees(entree)
+        )[0]
+
         classes = [int(c) for c in self._arbre.classes_]
 
+        return (
+            ETIQUETTES_FORCE[prediction],
+            {
+                ETIQUETTES_FORCE[c]: float(p)
+                for c, p in zip(classes, probabilites)
+            }
+        )
 
-
-        #retourne un str dettiquette et le dict de probbilite par strenght 
-        return ETIQUETTES_FORCE[prediction], {ETIQUETTES_FORCE[c]: float(p) for c, p in zip(classes, probabilites)}
-
-    
-    
-    
-    
-    
-    
     def sauvegarder(self, df: pd.DataFrame) -> None:
-       """Écrit le modèle entraîné (joblib) et les métadonnées (JSON).
+        """Sauvegarde le modèle et ses métadonnées."""
 
-        Le JSON contient les noms des colonnes, les valeurs possibles des
-        variables catégorielles, l'intervalle des variables numériques et
-        les métriques obtenues : l'interface s'en servira pour se construire.
-        Lève ModeleNonEntraineError si le modèle n'a pas encore été entraîné.
-        """
-       if not self._entraine:
-           raise ModeleNonEntraineError('Le modèle doit être entraîné avant d\'être sauvegardé.')
-    os.makedirs(DOSSIER_MODELES, exist_ok=True)
-    joblib.dump(self._arbre, cheminModele)
+        if not self._entraine:
+            raise ModeleNonEntraineError(
+                'Le modèle doit être entraîné avant d’être sauvegardé.'
+            )
 
-        # une entree par caracteristique, construite a partir du DataFrame
-    variables = {}
-    for colonne in COLONNES_NUMERIQUES:
-            variables[colonne] = {'type': 'numerique',
-                                  'min': int(df[colonne].min()),
-                                  'max': int(df[colonne].max())}
-    variables[COLONNE_CATEGORIELLE] = {'type': 'categorielle',
-                                           'valeurs': VALEURS_PREMIER_CARACTERE}
-    metadonnees = {
+        os.makedirs(DOSSIER_MODELES, exist_ok=True)
+
+        joblib.dump(self._arbre, cheminModele)
+
+        variables = {}
+
+        for colonne in COLONNES_NUMERIQUES:
+            variables[colonne] = {
+                'type': 'numerique',
+                'min': int(df[colonne].min()),
+                'max': int(df[colonne].max())
+            }
+
+        variables[COLONNE_CATEGORIELLE] = {
+            'type': 'categorielle',
+            'valeurs': VALEURS_PREMIER_CARACTERE
+        }
+
+        metadonnees = {
             'modele': f'Arbre de décision (max_depth={self._arbre.max_depth}, random_state={self._arbre.random_state})',
             'colonnesEntree': COLONNES_ENTREE,
             'colonneCible': COLONNE_CIBLE,
-            'classesCible': {str(k): v for k, v in ETIQUETTES_FORCE.items()},
+            'classesCible': {
+                str(k): v for k, v in ETIQUETTES_FORCE.items()
+            },
             'variables': variables,
-            'metriques': self._metriques,
+            'metriques': self._metriques
         }
-    with open(cheminMetadonnees, 'w', encoding='utf-8') as f:
+
+        with open(cheminMetadonnees, 'w', encoding='utf-8') as f:
             json.dump(metadonnees, f, indent=2, ensure_ascii=False)
 
+    def sauvegarderGraphique(self, chemin: str) -> None:
+        """Sauvegarde le graphique de la matrice de confusion."""
 
-    def predireLot(self, X: pd.DataFrame) -> np.ndarray:
-      """Prédit la classe de chaque ligne de X."""
-      if not self._entraine:
-        raise  ModeleNonEntraineError('Le modèle doit être entraîné avant de prédire.')
-      return self._arbre.predict(X)
+        if not self._entraine:
+            raise ModeleNonEntraineError(
+                'Le modèle doit être entraîné avant de créer le graphique.'
+            )
 
+        sauvegarderMatriceConfusion(
+            self._yTest, self._yPredit, chemin
+        )
 
     @property
     def metriques(self) -> dict:
-        """Copie du dictionnaire des métriques d'évaluation."""
         return dict(self._metriques)
-    
+
     @property
     def entraine(self) -> bool:
-        """Indique si le modèle a été entraîné."""
         return self._entraine
-   
+
     def __str__(self) -> str:
         exactitude = self._metriques.get('exactitude')
-        return (f'Modele(arbre de décision, max_depth={self._arbre.max_depth}, '
-                f'entraîné={self._entraine}, exactitude={exactitude})')
 
-    
-
-   
+        return (
+            f'Modele(arbre de décision, '
+            f'max_depth={self._arbre.max_depth}, '
+            f'entraîné={self._entraine}, '
+            f'exactitude={exactitude})'
+        )

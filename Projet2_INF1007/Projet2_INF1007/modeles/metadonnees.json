@@ -1,10 +1,11 @@
 {
   "modele": "Arbre de décision (max_depth=10, random_state=42)",
   "colonnesEntree": [
-    "longeur",
-    "contientMajuscule",
-    "contientChiffre",
-    "contientSpecial"
+    "longueur",
+    "nbMajuscule",
+    "nbChiffre",
+    "nbSpecial",
+    "premierCaractere"
   ],
   "colonneCible": "strength",
   "classesCible": {
@@ -13,53 +14,55 @@
     "2": "Fort"
   },
   "variables": {
-    "longeur": {
+    "longueur": {
       "type": "numerique",
       "min": 4,
       "max": 174
     },
-    "contientMajuscule": {
-      "type": "categorielle",
-      "valeurs": [
-        0,
-        1
-      ]
+    "nbMajuscule": {
+      "type": "numerique",
+      "min": 0,
+      "max": 63
     },
-    "contientChiffre": {
-      "type": "categorielle",
-      "valeurs": [
-        0,
-        1
-      ]
+    "nbChiffre": {
+      "type": "numerique",
+      "min": 0,
+      "max": 50
     },
-    "contientSpecial": {
+    "nbSpecial": {
+      "type": "numerique",
+      "min": 3,
+      "max": 109
+    },
+    "premierCaractere": {
       "type": "categorielle",
       "valeurs": [
-        0,
-        1
+        "lettre",
+        "chiffre",
+        "special"
       ]
     }
   },
   "metriques": {
-    "exactitude": 0.8208333333333333,
-    "f1Macro": 0.820082312231018,
-    "exactitudeNumpy": 0.8208333333333333,
+    "exactitude": 0.9341666666666667,
+    "f1Macro": 0.9345725260379155,
+    "exactitudeNumpy": 0.9341666666666667,
     "exactitudeReference": 0.33416666666666667,
     "matriceConfusion": [
       [
-        1363,
-        635,
+        1740,
+        258,
         0
       ],
       [
-        21,
-        1932,
-        52
+        52,
+        1925,
+        28
       ],
       [
-        266,
-        101,
-        1630
+        0,
+        57,
+        1940
       ]
     ]
   }

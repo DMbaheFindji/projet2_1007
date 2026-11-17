@@ -39,7 +39,7 @@ class JeuDeDonnees:
                 next(entree,None)
 
                 #On fait l'en-tête pour le nouveau fichier csv
-                lignes_converties.append('password,longueur,nombretMajuscule,nombreChiffre,nombreSpecial,premierCaractere,strength\n')
+                lignes_converties.append('password,longueur,nbMajuscule,nbChiffre,nbSpecial,premierCaractere,strength\n')
                
                 #On va ajouter les lignes a modifier dans la liste tant que le nombre de lignes est inferieur à la limite de 30 000
                 for ligne in entree:
