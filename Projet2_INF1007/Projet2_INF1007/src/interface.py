@@ -1,28 +1,80 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QPushButton
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QPushButton,QLineEdit,QHBoxLayout,QFrame
 
 class Application(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Mon Application INF1007")
-        self.resize(800, 600)
+        self.initUI()
 
-        # 1. Créer un conteneur central et un layout (dispositif d'alignement)
-        conteneur = QWidget()
-        self.setCentralWidget(conteneur)
-        layout = QVBoxLayout()  # Empile les éléments verticalement
-        conteneur.setLayout(layout)
 
-        # 2. Ajouter des composants (Widgets)
-        self.texte = QLabel("En attente d'une prédiction...")
-        bouton = QPushButton("Prédire")
+    def initUI(self):
+            self.setWindowTitle("Évaluateur de robustesse de Mots de Passe")
+            self.resize(900, 600)
+            
+    # Widget central de la fenêtre
+            widget_central = QWidget()
+            self.setCentralWidget(widget_central)
 
-        # 3. Connecter l'action du bouton (Signal -> Slot)
-        bouton.clicked.connect(self.action_predire)
+            layout_principal = QHBoxLayout(widget_central)
 
-        layout.addWidget(self.texte)
-        layout.addWidget(bouton)
+            # ==================== COLONNE DE GAUCHE ====================
+            widget_gauche = QWidget()
+            layout_gauche = QVBoxLayout(widget_gauche)
 
-    def action_predire(self):
-        self.texte.setText("Le bouton fonctionne !")
+            # Titre
+            self.label_instruction = QLabel('<b>Testez votre mot de passe</b>')
+            layout_gauche.addWidget(self.label_instruction)
 
+            # Ligne horizontale pour la saisie  texte + Bouton "Prédire" côte à côte)
+            layout_saisie = QHBoxLayout()
+            
+            self.input_password = QLineEdit()
+            self.input_password.setEchoMode(QLineEdit.EchoMode.Password)
+            self.input_password.setPlaceholderText("Entrez votre mot de passe...")
+            layout_saisie.addWidget(self.input_password)
+
+            self.btn_predire = QPushButton("Prédire")
+            self.btn_predire.clicked.connect(self.executer_prediction)
+            layout_saisie.addWidget(self.btn_predire)
+
+            # On ajoute la ligne de saisie au layout de gauche
+            layout_gauche.addLayout(layout_saisie)
+
+            # Zone de résultat (qui apparaîtra sous le bouton quand on clique)
+            self.label_resultat = QLabel("")
+            layout_gauche.addWidget(self.label_resultat)
+
+            # Pousse tout vers le haut pour garder un beau design
+            layout_gauche.addStretch()
+
+            # On ajoute la colonne de gauche au layout principal
+            layout_principal.addWidget(widget_gauche, stretch=1)
+
+            # ==================== SÉPARATEUR VERTICAL ====================
+            ligne_separation = QFrame()
+            ligne_separation.setFrameShape(QFrame.Shape.VLine)
+            ligne_separation.setFrameShadow(QFrame.Shadow.Sunken)
+            layout_principal.addWidget(ligne_separation)
+
+            # ==================== COLONNE DE DROITE (Graphique) ====================
+            widget_droite = QWidget()
+            layout_droite = QVBoxLayout(widget_droite)
+
+            # Espace réservé pour le graphique Matplotlib (pour l'instant, un simple label)
+            self.label_graphique_placeholder = QLabel("Le graphique apparaîtra ici")
+            self.label_graphique_placeholder.setStyleSheet("color: gray; font-style: italic;")
+            layout_droite.addWidget(self.label_graphique_placeholder)
+
+            # On ajoute la colonne de droite au layout principal
+            layout_principal.addWidget(widget_droite, stretch=1)
+
+    def executer_prediction(self):
+            # Action lors du clic sur le bouton "Prédire"
+            password = self.input_password.text()
+            
+            if not password:
+                self.label_resultat.setText("<font color='red'>Veuillez entrer un mot de passe !</font>")
+                return
+
+            # Simulation du résultat (ici vous brancherez votre modèle plus tard)
+            self.label_resultat.setText(f"<b>Résultat :</b> Mot de passe analysé avec succès !")
