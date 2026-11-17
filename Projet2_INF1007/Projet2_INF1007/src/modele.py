@@ -34,7 +34,10 @@ COLONNE_CIBLE = 'strength' # cest le y variable a predire
 ETIQUETTES_FORCE = {0: 'Faible', 1: 'Moyen', 2: 'Fort'} # dictionnaire de traduction
 COLONNES_REQUISES = ['password'] + COLONNES_ENTREE + [COLONNE_CIBLE]
 
-
+COLONNES_NUMERIQUES = ['longueur', 'nombretMajuscule', 'nombreChiffre', 'nombreSpecial']
+COLONNE_CATEGORIELLE = 'premierCaractere'
+VALEURS_PREMIER_CARACTERE = ['lettre', 'chiffre', 'special']
+COLONNES_ENTREE = COLONNES_NUMERIQUES + [COLONNE_CATEGORIELLE]
 
 #TODO: update docstring enleve les test et juste mettre en 
 
@@ -154,7 +157,7 @@ class Modele:
     et l'état d'entraînement.
     """
 
-    #profondeur de l'abre 
+    #profondeur de l'arbre 
     def __init__(self, profondeurMax: int = 10, graine: int = graineAleatoire) -> None:
         #random state pour rendre reporductioible les choix aleatoire durant la construction de larbre 
         self._arbre = DecisionTreeClassifier(max_depth=profondeurMax, random_state=graine) # creation de labre de decision pas encore entraine sklearn
@@ -229,34 +232,37 @@ class Modele:
     
     
     def sauvegarder(self, df: pd.DataFrame) -> None:
-        """Écrit le modèle entraîné (joblib) et les métadonnées (JSON).
+       """Écrit le modèle entraîné (joblib) et les métadonnées (JSON).
 
         Le JSON contient les noms des colonnes, les valeurs possibles des
-        variables catégorielles, l'intervalle de la variable numérique et
+        variables catégorielles, l'intervalle des variables numériques et
         les métriques obtenues : l'interface s'en servira pour se construire.
-        Lève RuntimeError si le modèle n'a pas encore été entraîné.
+        Lève ModeleNonEntraineError si le modèle n'a pas encore été entraîné.
         """
-        if not self._entraine:
-            raise ModeleNonEntraineError('Le modèle doit être entraîné avant d\'être sauvegardé.')
-        os.makedirs(DOSSIER_MODELES, exist_ok=True)
-        joblib.dump(self._arbre, cheminModele)
-        metadonnees = {
+       if not self._entraine:
+           raise ModeleNonEntraineError('Le modèle doit être entraîné avant d\'être sauvegardé.')
+    os.makedirs(DOSSIER_MODELES, exist_ok=True)
+    joblib.dump(self._arbre, cheminModele)
+
+        # une entree par caracteristique, construite a partir du DataFrame
+    variables = {}
+    for colonne in COLONNES_NUMERIQUES:
+            variables[colonne] = {'type': 'numerique',
+                                  'min': int(df[colonne].min()),
+                                  'max': int(df[colonne].max())}
+    variables[COLONNE_CATEGORIELLE] = {'type': 'categorielle',
+                                           'valeurs': VALEURS_PREMIER_CARACTERE}
+    metadonnees = {
             'modele': f'Arbre de décision (max_depth={self._arbre.max_depth}, random_state={self._arbre.random_state})',
             'colonnesEntree': COLONNES_ENTREE,
             'colonneCible': COLONNE_CIBLE,
             'classesCible': {str(k): v for k, v in ETIQUETTES_FORCE.items()},
-            'variables': {
-                'longeur': {'type': 'numerique',
-                            'min': int(df['longeur'].min()),
-                            'max': int(df['longeur'].max())},
-                'contientMajuscule': {'type': 'categorielle', 'valeurs': [0, 1]},
-                'contientChiffre': {'type': 'categorielle', 'valeurs': [0, 1]},
-                'contientSpecial': {'type': 'categorielle', 'valeurs': [0, 1]},
-            },
+            'variables': variables,
             'metriques': self._metriques,
         }
-        with open(cheminMetadonnees, 'w', encoding='utf-8') as f:
+    with open(cheminMetadonnees, 'w', encoding='utf-8') as f:
             json.dump(metadonnees, f, indent=2, ensure_ascii=False)
+
 
     def predireLot(self, X: pd.DataFrame) -> np.ndarray:
       """Prédit la classe de chaque ligne de X."""
