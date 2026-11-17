@@ -13,7 +13,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 
-from exception import (DonneeInvalideError, EntreeInvalideError,
+from exception import (EntreeInvalideError,
                         ModeleNonEntraineError)
 
 
@@ -36,34 +36,6 @@ COLONNES_ENTREE = COLONNES_NUMERIQUES + [COLONNE_CATEGORIELLE]
 COLONNE_CIBLE = 'strength' # cest le y variable a predire
 ETIQUETTES_FORCE = {0: 'Faible', 1: 'Moyen', 2: 'Fort'} # dictionnaire de traduction
 COLONNES_REQUISES = ['password'] + COLONNES_ENTREE + [COLONNE_CIBLE]
-
-
-#TODO: update docstring enleve les test et juste mettre en 
-
-def chargerDonnees(chemin: str) -> pd.DataFrame: 
-    """Charge le CSV avec pandas et nettoie les données.
-
-    Supprime les valeurs manquantes, les mots de passe vides et les doublons.
-    Lève FileNotFoundError si le fichier n'existe pas (lancer d'abord la
-    classe Transformer pour générer donnees.csv) et ValueError si le
-    fichier ne contient aucune donnée quon peut utiliser
-    """
-    if not os.path.exists(chemin):
-        raise FileNotFoundError(
-            f'Fichier introuvable : {chemin}. '
-            f'Génère-le d\'abord avec la classe Transformer (donnees.py).')
-    df = pd.read_csv(chemin) 
-# verification des colonnes manquantes
-    manquantes = [c for c in COLONNES_REQUISES if c not in df.columns]
-    if manquantes:
-        raise DonneeInvalideError(f'Colonnes manquantes dans {chemin} : {manquantes}')
-    
-    df = df.dropna() # au cas ou si une ligne contient des valeurs manquante
-    df = df[df['password'].astype(str).str.len() > 0] # enleve si les mdp est vides 
-    df = df.drop_duplicates() # supprime ligne identique 
-    if df.empty:
-        raise DonneeInvalideError(f'Aucune donnée exploitable dans {chemin}')
-    return df # retourne un tableau de donnees 
 
 
 def separerDonnees(df: pd.DataFrame, tailleTest: float = 0.2) -> tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
