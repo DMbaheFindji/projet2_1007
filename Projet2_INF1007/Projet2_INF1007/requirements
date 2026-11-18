@@ -1,0 +1,9 @@
+
+pytest
+pandas
+scikit-learn
+numpy
+matplotlib
+joblib
+PyQt6
+coverage

@@ -29,7 +29,3 @@ modele envisagé:
 ### profondeur maximale choisi:
 - depth = 10 pour eviter le surapprentissage
 
-### choix pour le graphique 2:
-- Heat map de la matrice de confusion = lecture plus melangeante
-- courbes = ne montre pas bien le pourecnetage de reussite (fait moin de sens)
-- barres de réussite par force (retenu): bonne lisibilité et intuitive
