@@ -1,5 +1,7 @@
 # projet2_1007
 
+
+### domaine 
 Question : Pourquoi ce sujet ?
     Nous avons choisi ce sujet,car nous n'avons pas encore eu locasion de travailler sur un projet lié à la cybersécurité et nous aimerions découvrir ce monde de la programmation.
 
@@ -14,18 +16,35 @@ Decisions prises:
 
 ### Pourquoi scikit-learn ?
 
- Il fournit tout ce dont le projet a besoin dans une seule bibliothèque :
-  `DecisionTreeClassifier` (modèle), `train_test_split` (séparation avec graine fixée
-  et classes stratifiées), `DummyClassifier` (référence), `accuracy_score`, `f1_score`
-  et `confusion_matrix` (évaluation), et `joblib` pour sauvegarder le modèle entraîné.
+- Options envisagées : [À COMPLÉTER : autres bibliothèques envisagées]
+- Choix retenu : scikit-learn.
+- Justification : il fournit tout ce dont le projet a besoin dans une seule bibliothèque : `DecisionTreeClassifier` (modèle), `train_test_split` (séparation avec graine fixée et classes stratifiées), `DummyClassifier` (référence), `accuracy_score`, `f1_score` et `confusion_matrix` (évaluation), et `joblib` pour sauvegarder le modèle entraîné.
 
-###  décision de l'arbre de décision:
 
-modele envisagé:
-- foret aleatoire: souvent plus precise mais plus lourde et difficile
--k plus proche du voisins: comparaison de distaance entre variables d'échelle tres differentes 
--Arbre de décision (retenu):Gère sans préparation des variables numériques et binaires, prédit directement trois classes, donne des probabilités (predict), plus comprehensif
+### modele
+- Options envisagées :
+    - Forêt aléatoire : souvent plus précise, mais plus complexe et plus lourde.
+    - K plus proches voisins (KNN) : nécessite de tenir compte des différences d'échelle    entre  les variables, notamment les distances.
+    - Arbre de décision : modèle simple à comprendre et à interpréter, qui permet de visualiser les critères utilisés pour effectuer une prédiction.
+- Choix retenu : Arbre de décision (DecisionTreeClassifier).
+- Justification : Nous avons retenu l'arbre de décision, car il permet de classifier directement les mots de passe selon trois catégories de robustesse. Il est relativement simple à comprendre et à interpréter, ce qui facilite l'explication des résultats. 
+- date: 5 novembre 2026
 
 ### profondeur maximale choisi:
-- depth = 10 pour eviter le surapprentissage
+- Options envisagées : 5, 10, 25
+- Choix retenu : `max_depth = 10`.
+- Justification : pour éviter le surapprentissage.
+- date: 6 novembre 2026
+#
+## Cible et métrique
 
+- Options envisagées : exactitude seule , f1 macros, recall
+- Choix retenu : cible `strength` (0 = Faible, 1 = Moyen, 2 = Fort), classification ; métrique : exactitude, complétée par le F1 macro.
+- Justification : les trois classes sont presque équilibrées (la référence obtient environ 33 %), donc l'exactitude est facile à lire. Le F1 macro vérifie que chaque classe est bien traitée.
+- Validé par l'auxiliaire : 13 novembre 2026
+
+### Technologie d'interface
+
+- Options envisagées : a finir
+- Choix retenu : PyQt6.
+- Justification : a finir
