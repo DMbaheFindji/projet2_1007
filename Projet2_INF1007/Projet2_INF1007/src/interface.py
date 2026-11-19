@@ -261,15 +261,23 @@ class Application(QMainWindow):
         with open(cheminCSVHistorique,"r",encoding="utf-8",newline="") as f:
             lignes=list(csv.reader(f))
 
-        tableau=QTableWidget(len(lignes)-1,len(lignes[0]))
-        tableau.setHorizontalHeaderLabels(lignes[0])
-        tableau.resizeColumnsToContents()
+          
+            entete=lignes[0]
+            donneesHist=sorted(lignes[1:],key=lambda ligne:ligne[0],reverse=True)
 
 
-        for i,l in enumerate(lignes[1:]):
+
+        tableau=QTableWidget(len(donneesHist),len(entete))
+        tableau.setHorizontalHeaderLabels(entete)
+
+
+
+        for i,l in enumerate(donneesHist):
             for j,valeur in enumerate(l):
                 tableau.setItem(i,j,QTableWidgetItem(valeur))
 
+
+        tableau.resizeColumnsToContents()
 
         layout.addWidget(tableau)
 
@@ -315,7 +323,7 @@ class Application(QMainWindow):
         
 
 
-        self._resultat.setText(f"Le mot de passe est prédit comme : {etiquette}\nLe modèle de prédiction est confiant du modèle à : {confiance:.0%}\n Durée de l'entrainement : {texteDuree} ")
+        self._resultat.setText(f"Le mot de passe est prédit comme : {etiquette}\nLe modèle de prédiction est confiant du modèle à : {confiance:.0%}\n Durée de l'entrainement :{texteDuree} ")
         self._resultat.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._resultat.setWordWrap(True)
 
