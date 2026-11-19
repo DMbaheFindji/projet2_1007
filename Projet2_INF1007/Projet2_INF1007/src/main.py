@@ -8,6 +8,7 @@ from exception import DonneeInvalideError
 from modele import (Modele,chargerModele, cheminMatriceConfusion,
                     sauvegarderMatriceConfusion, separerDonnees, cheminMetadonnees,chargerMetadonnees)
 
+from JeuDeDonnees import JeuDeDonnees, lireCsvValide
 
 #Les chemins des fichiers et dossiers importants utilisés :
 DOSSIER_SRC=os.path.dirname(os.path.abspath(__file__))
@@ -71,12 +72,18 @@ def premierInstallation()-> None:
     Fonction qui prépare les données et entraîne le modèle. 
     Elle s'exécute une seul fois.
     '''
+    try:
     #Si le fichier donnees.csv n'existe pas on appèle une seul fois la méthode qui doit le créer
-    if not os.path.isfile(CHEMIN_CSV):
-        preparer_donnee()
         if not os.path.isfile(CHEMIN_CSV):
-            return #Si la preparationd es données a echouée on sort de la methode
+            preparer_donnee()
+            if not os.path.isfile(CHEMIN_CSV):
+                return #Si la preparationd es données a echouée on sort de la methode
     #si la préparationd es données a reussi on execute l'entrainement
+        df=lireCsvValide(CHEMIN_CSV)
+    except DonneeInvalideError as e:
+        print(f'Données invalides : {e}')
+        return
+    #si la préparation des données a reussi on execute l'entrainement
     entrainer_et_sauvegarder(pd.read_csv(CHEMIN_CSV))
 
 
