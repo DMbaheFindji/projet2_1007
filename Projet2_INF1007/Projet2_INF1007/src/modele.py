@@ -18,6 +18,8 @@ from exception import (EntreeInvalideError,
 
 import functools
 import time
+from abc import ABC, abstractmethod
+
 
 
 DOSSIER_PROJET = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -131,6 +133,63 @@ def sauvegarderMatriceConfusion(yTest: pd.Series, yPredit: np.ndarray, chemin: s
     fig.savefig(chemin, bbox_inches='tight')
     plt.close(fig)
 
+def sauvegarderHeatmapConfusion(yTest: pd.Series, yPredit: np.ndarray, chemin: str) -> None:
+    """Enregistre avec savefig une matrice de confusion en carreaux colorés (heatmap).
+
+    Reçoit les vraies classes, les classes prédites et le chemin du fichier image.
+    Chaque carreau affiche le nombre de mots de passe et le pourcentage de la
+    vraie force (une ligne = une vraie force, une colonne = la force prédite).
+    Ne renvoie rien.
+    """
+    classes = sorted(set(np.asarray(yTest)) | set(np.asarray(yPredit)))
+    etiquettes = [ETIQUETTES_FORCE[int(c)] for c in classes]
+
+    # cm[i][j] = nombre de lignes dont la vraie classe est i et la prédite est j
+    cm = confusion_matrix(yTest, yPredit, labels=classes)
+    totaux = cm.sum(axis=1, keepdims=True)
+    pourcentages = cm / np.where(totaux == 0, 1, totaux)
+
+    fig, ax = plt.subplots(figsize=(6, 5))
+    image = ax.imshow(pourcentages, cmap='Blues', vmin=0, vmax=1)
+    fig.colorbar(image, ax=ax, label='Part de la vraie force')
+
+    ax.set_xticks(range(len(etiquettes)), labels=etiquettes)
+    ax.set_yticks(range(len(etiquettes)), labels=etiquettes)
+
+    # Écrire le nombre et le pourcentage dans chaque carreau
+    for i in range(len(classes)):
+        for j in range(len(classes)):
+            couleur = 'white' if pourcentages[i, j] > 0.5 else 'black'
+            ax.text(j, i, f'{cm[i, j]}\n({pourcentages[i, j]:.0%})',
+                    ha='center', va='center', color=couleur)
+
+    ax.set_xlabel('Force prédite')
+    ax.set_ylabel('Force réelle')
+    ax.set_title('Matrice de confusion (ensemble de test)')
+    fig.savefig(chemin, bbox_inches='tight')
+    plt.close(fig)
+
+
+class Metrique(ABC):
+    """Classe parente (abstraite) : une façon d'évaluer le modèle."""
+
+    @abstractmethod
+    def calculer(self, yReel: pd.Series, yPredit: np.ndarray) -> float:
+        """Reçoit les vraies classes et les classes prédites, renvoie le score."""
+
+
+class Exactitude(Metrique):
+    """Proportion de bonnes prédictions, calculée avec scikit-learn."""
+
+    def calculer(self, yReel: pd.Series, yPredit: np.ndarray) -> float:
+        return float(accuracy_score(yReel, yPredit))
+
+
+class F1Macro(Metrique):
+    """Moyenne du F1 de chaque classe (toutes comptent autant)."""
+
+    def calculer(self, yReel: pd.Series, yPredit: np.ndarray) -> float:
+        return float(f1_score(yReel, yPredit, average='macro'))
 
 
 def chronometrer(fonction):
@@ -191,8 +250,8 @@ class Modele:
 
         # Calcul des métriques
         self._metriques = {
-            'exactitude': float(accuracy_score(yTest, yPredit)),
-            'f1Macro': float(f1_score(yTest, yPredit, average='macro')),
+            'exactitude':  Exactitude().calculer(yTest, yPredit),
+            'f1Macro': F1Macro().calculer(yTest, yPredit),
             'exactitudeNumpy': exactitudeNumpy(yTest, yPredit),
             'exactitudeReference': calculerReference(
                 XTrain, yTrain, XTest, yTest
