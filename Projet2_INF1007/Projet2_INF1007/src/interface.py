@@ -264,7 +264,7 @@ class Application(QMainWindow):
           
             entete=lignes[0]
             donneesHist=sorted(lignes[1:],key=lambda ligne:ligne[0],reverse=True)
-
+            #Ici on trie les prédictions de l'historique du plus ancien au plus récent
 
 
         tableau=QTableWidget(len(donneesHist),len(entete))
