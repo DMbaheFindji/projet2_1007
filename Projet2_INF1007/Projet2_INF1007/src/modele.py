@@ -214,17 +214,25 @@ class Modele:
 
     def __init__(self, profondeurMax: int = 10,
                  graine: int = graineAleatoire) -> None:
+        """Constructeur : crée l'arbre de décision et initialise les attributs.
 
+        - profondeurMax : limite la profondeur de l'arbre pour éviter
+          le surapprentissage 
+        - graine : fixe l'aléatoire de scikit-learn pour être reproductible
+        """
+
+
+        # l'arbre de decision qui apprend a predire la force du mdp
         self._arbre = DecisionTreeClassifier(
             max_depth=profondeurMax,
             random_state=graine
         )
 
-        self._metriques = {}
-        self._entraine = False
-        self._yTest = None
-        self._yPredit = None
-        self._dureeEntrainement=None
+        self._metriques = {} # score calucles apres entrainement 
+        self._entraine = False # true apres entrainement
+        self._yTest = None # le test pour le graphique
+        self._yPredit = None # classes predite du test 
+        self._dureeEntrainement=None # rempli par le decorateur chronometrer
 
 
  
@@ -281,11 +289,62 @@ class Modele:
                 nbChiffre: int, nbSpecial: int,
                 premierCaractere: str):
 
+        """Prédit la force d'UN seul mot de passe à partir de ses 5 caractéristiques.
+
+        Renvoie un tuple : (étiquette prédite, dictionnaire des probabilités
+        de chaque force). Lève EntreeInvalideError si les entrées sont invalides
+        """
+        
+        # la longuer doit etre au moin 1 sinon mdp impossible vide
+        if longueur < 1:
+            raise EntreeInvalideError(
+                'La longueur doit être au moins 1.'
+            )
+        # chaque compteur de caracteres pas negatif 
+        for nom, valeur in (
+            ('nbMajuscule', nbMajuscule),
+            ('nbChiffre', nbChiffre),
+            ('nbSpecial', nbSpecial)
+        ):
+            if valeur < 0:
+                raise EntreeInvalideError(
+                    f'{nom} ne peut pas être négatif.'
+                )
+        # total peut pas depasser la longueur total
+        if nbMajuscule + nbChiffre + nbSpecial > longueur:
+            raise EntreeInvalideError(
+                'Le total des caractéristiques dépasse la longueur.'
+            )
+       
+        if premierCaractere not in VALEURS_PREMIER_CARACTERE:
+            raise EntreeInvalideError(
+                f'premierCaractere doit valoir {VALEURS_PREMIER_CARACTERE}.'
+            )
+        # constructionn du dataframe sune ligne avec les memem colonnes
+        # que le training pour que le modele reconnaisse
+        entree = pd.DataFrame(
+            [[longueur, nbMajuscule, nbChiffre,
+              nbSpecial, premierCaractere]],
+            columns=COLONNES_ENTREE
+        )
+        #prediction de la classe 0,1,2 grace a predireLot
+        prediction = int(self.predireLot(entree)[0])
+
+    def predire(self, longueur: int, nbMajuscule: int,
+                nbChiffre: int, nbSpecial: int,
+                premierCaractere: str):
+        """Prédit la force d'UN seul mot de passe à partir de ses 5 caractéristiques.
+
+        Renvoie un tuple : (étiquette prédite, dictionnaire des probabilités
+        de chaque force). Lève EntreeInvalideError si les entrées sont absurdes.
+        """
+        # La longueur doit être au moins 1 (un mot de passe vide est impossible)
         if longueur < 1:
             raise EntreeInvalideError(
                 'La longueur doit être au moins 1.'
             )
 
+        # Chaque compteur de caractères ne peut pas être négatif
         for nom, valeur in (
             ('nbMajuscule', nbMajuscule),
             ('nbChiffre', nbChiffre),
@@ -296,24 +355,45 @@ class Modele:
                     f'{nom} ne peut pas être négatif.'
                 )
 
+        # Les majuscules + chiffres + spéciaux ne peuvent pas dépasser la longueur totale
         if nbMajuscule + nbChiffre + nbSpecial > longueur:
             raise EntreeInvalideError(
                 'Le total des caractéristiques dépasse la longueur.'
             )
 
+        # premierCaractere doit être une des 3 valeurs permises
         if premierCaractere not in VALEURS_PREMIER_CARACTERE:
             raise EntreeInvalideError(
                 f'premierCaractere doit valoir {VALEURS_PREMIER_CARACTERE}.'
             )
 
+        # On construit un DataFrame d'une seule ligne avec les mêmes colonnes
+        # que l'entraînement, pour que le modèle le reconnaisse
         entree = pd.DataFrame(
             [[longueur, nbMajuscule, nbChiffre,
               nbSpecial, premierCaractere]],
             columns=COLONNES_ENTREE
         )
 
+        # Prédiction de la classe (0, 1 ou 2) grâce à predireLot
         prediction = int(self.predireLot(entree)[0])
 
+        # Probabilité que le modèle donne à chaque classe possible
+        probabilites = self._arbre.predict_proba(
+            encoderEntrees(entree)
+        )[0]
+
+        # classes_ contient les classes vues pendant l'entraînement (0, 1, 2)
+        classes = [int(c) for c in self._arbre.classes_]
+
+        # On traduit les numéros en étiquettes lisibles (Faible, Moyen, Fort)
+        return (
+            ETIQUETTES_FORCE[prediction],
+            {
+                ETIQUETTES_FORCE[c]: float(p)
+                for c, p in zip(classes, probabilites)
+            }
+        )       
         probabilites = self._arbre.predict_proba(
             encoderEntrees(entree)
         )[0]
@@ -330,30 +410,30 @@ class Modele:
 
     def sauvegarder(self, df: pd.DataFrame) -> None:
         """Sauvegarde le modèle et ses métadonnées."""
-
+        # peut pas sauvegarder si c pas entrainer
         if not self._entraine:
             raise ModeleNonEntraineError(
                 'Le modèle doit être entraîné avant d’être sauvegardé.'
             )
-
+        #creation du dossier modele si il nexiste pas
         os.makedirs(DOSSIER_MODELES, exist_ok=True)
-
+        # serialisation de larbre entraine dans un joblib
         joblib.dump(self._arbre, cheminModele)
 
         variables = {}
-
+        #pour chqaque colonnes nujmerique : type+ min+max analyser dans les donnees
         for colonne in COLONNES_NUMERIQUES:
             variables[colonne] = {
                 'type': 'numerique',
                 'min': int(df[colonne].min()),
                 'max': int(df[colonne].max())
             }
-
+        #colonne ncategorielle = sa liste de valeurs permises
         variables[COLONNE_CATEGORIELLE] = {
             'type': 'categorielle',
             'valeurs': VALEURS_PREMIER_CARACTERE
         }
-
+        # dico complet ecrit dans metadonnees.json
         metadonnees = {
             'modele': f'Arbre de décision (max_depth={self._arbre.max_depth}, random_state={self._arbre.random_state})',
             'colonnesEntree': COLONNES_ENTREE,
@@ -366,7 +446,7 @@ class Modele:
             'dureeEntrainement': self._dureeEntrainement
         }
 
-
+    # ecriture du json
         with open(cheminMetadonnees, 'w', encoding='utf-8') as f:
             json.dump(metadonnees, f, indent=2, ensure_ascii=False)
 
@@ -381,7 +461,7 @@ class Modele:
         sauvegarderMatriceConfusion(
             self._yTest, self._yPredit, chemin
         )
-
+# ---- Propriétés en lecture seule ----
     @property
     def metriques(self) -> dict:
         return dict(self._metriques)
@@ -396,6 +476,7 @@ class Modele:
         return self._entraine
 
     def __str__(self) -> str:
+        # get() renvoie None si pas encore entraîné, sans planter
         exactitude = self._metriques.get('exactitude')
 
         return (
@@ -420,15 +501,21 @@ def chargerMetadonnees(chemin:str=cheminMetadonnees)-> dict:
 
 
 def chargerModele(cls=Modele,chemin:str=cheminModele)->'Modele':
-    """Cette fonction reconstruit le fichier joblib sauvegardé du modèle pour pouvoir reutiliser le modele deja entrainé"
+    """Reconstruit le modèle sauvegardé en .joblib pour le réutiliser sans réentraîner.
+
+    Réinjecte aussi les métriques et la durée d'entraînement lues
+    depuis metadonnees.json.
     """
+
+    # erreur claire si le fichier nexiste pas
     if not os.path.isfile(chemin):
         raise FileNotFoundError(f'Le modèle est introuvable : {chemin}')
-
+    # nouveau modele vide - on remplace larbre par celui du joblib
     modele=cls()
     modele._arbre=joblib.load(chemin)
     modele._entraine=True
 
+    # finalisation du modele avec les metadonnees du json
     metaDonne=chargerMetadonnees()
     modele._metriques=metaDonne['metriques']
     modele._dureeEntrainement=metaDonne.get('dureeEntrainement')
