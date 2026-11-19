@@ -1,7 +1,2 @@
 dateHeure,longueur,nombre de Majuscule,nombre de Chiffre,nombre de caractères Speciaux,premier Caractere,prediction,confiance
-2026-11-17 22:01:51,20,2,2,0,lettre,Moyen,99.1
-2026-11-18 19:16:01,1,0,0,0,lettre,Faible,100.0
-2026-11-18 21:26:57,20,2,2,2,lettre,Moyen,99.1
-2026-11-18 21:27:44,20,0,1,1,lettre,Moyen,100.0
-2026-11-18 21:28:55,20,1,1,1,lettre,Moyen,99.1
-2026-11-18 21:30:19,20,1,1,1,lettre,Moyen,99.1
+2026-11-18 21:42:49,20,2,2,2,lettre,Moyen,99.1
