@@ -16,10 +16,13 @@ from sklearn.tree import DecisionTreeClassifier
 from exception import (EntreeInvalideError,
                         ModeleNonEntraineError)
 
+import functools
+import time
+
 
 DOSSIER_PROJET = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DOSSIER_MODELES = os.path.join(DOSSIER_PROJET, 'modeles')# la ou on va ecrire le modele entraine
-DOSSIER_DONNEES = os.path.join(DOSSIER_PROJET, 'donnees')
+DOSSIER_DONNEES = os.path.join(DOSSIER_PROJET, 'donneesFolder')
 
 cheminFichierCsv = os.path.join(DOSSIER_DONNEES, 'donnees.csv') # chemin complet du CSV dentree 
 cheminModele = os.path.join(DOSSIER_MODELES, 'modele.joblib') # le modele entrainee 
@@ -129,6 +132,25 @@ def sauvegarderMatriceConfusion(yTest: pd.Series, yPredit: np.ndarray, chemin: s
     plt.close(fig)
 
 
+
+def chronometrer(fonction):
+        """
+        Cette fonction est un décorateur qui a pour but de chronométrer le temps
+        d'exécution de la fonction
+        Retourne Temps d'exécution de la fonction
+        """
+        @functools.wraps(fonction)
+        def enveloppe(*args):
+            debut=time.time()
+            resultat=fonction(*args)
+            fin=time.time()
+            duree=round(fin-debut,1)
+            print("Durée :",duree,"s")
+            args[0]._dureeEntrainement=duree
+            return resultat
+        return enveloppe
+
+
 class Modele:
 
     def __init__(self, profondeurMax: int = 10,
@@ -143,7 +165,13 @@ class Modele:
         self._entraine = False
         self._yTest = None
         self._yPredit = None
+        self._dureeEntrainement=None
 
+
+ 
+
+
+    @chronometrer
     def entrainer(self, df: pd.DataFrame) -> dict:
         """Sépare les données, entraîne le modèle et calcule les métriques."""
 
@@ -176,6 +204,8 @@ class Modele:
 
         return self.metriques
 
+
+
     def predireLot(self, X: pd.DataFrame) -> np.ndarray:
         """Prédit la classe de chaque ligne de X."""
 
@@ -185,6 +215,8 @@ class Modele:
             )
 
         return self._arbre.predict(encoderEntrees(X))
+
+
 
     def predire(self, longueur: int, nbMajuscule: int,
                 nbChiffre: int, nbSpecial: int,
@@ -271,8 +303,10 @@ class Modele:
                 str(k): v for k, v in ETIQUETTES_FORCE.items()
             },
             'variables': variables,
-            'metriques': self._metriques
+            'metriques': self._metriques,
+            'dureeEntrainement': self._dureeEntrainement
         }
+
 
         with open(cheminMetadonnees, 'w', encoding='utf-8') as f:
             json.dump(metadonnees, f, indent=2, ensure_ascii=False)
@@ -292,6 +326,11 @@ class Modele:
     @property
     def metriques(self) -> dict:
         return dict(self._metriques)
+
+    @property
+    def dureeEntrainement(self) -> float:
+        return self._dureeEntrainement
+
 
     @property
     def entraine(self) -> bool:
@@ -330,4 +369,10 @@ def chargerModele(cls=Modele,chemin:str=cheminModele)->'Modele':
     modele=cls()
     modele._arbre=joblib.load(chemin)
     modele._entraine=True
+
+    metaDonne=chargerMetadonnees()
+    modele._metriques=metaDonne['metriques']
+    modele._dureeEntrainement=metaDonne.get('dureeEntrainement')
     return modele
+
+

@@ -12,7 +12,6 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 
-
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, 
     QLabel, QPushButton, QLineEdit, QHBoxLayout, 
@@ -24,6 +23,9 @@ from PyQt6.QtCore import Qt
 
 from exception import EntreeInvalideError,ModeleNonEntraineError
 
+
+
+#Chemins des dossiers et fichier csv,json et png utilisé
 cheminMetadonnees = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "modeles", "metadonnees.json")
 cheminMatriceConfusion = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "modeles", "matrice_confusion.png")
 cheminGraphique = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "modeles", "graphique_prediction.png")
@@ -31,6 +33,15 @@ cheminCSVHistorique=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..
 
 
 class Application(QMainWindow):
+
+    '''
+    Classe responsable de:
+            -Charger le fichier de métadonnées contenant les informations importantes que notre modèle utilise pour sa prédiction du jeu de donnée
+            -Afficher les graphiques représentant nos prédictions
+            -Enregistrer les prédictions faites par le modèle dans un fichier cs nommé historiquue
+    '''
+
+    
     def __init__(self,modele,metadonnees):
         super().__init__()
         self.modele=modele
@@ -55,8 +66,7 @@ class Application(QMainWindow):
         gauche.setFixedWidth(400)
 
 
-        #Un layout vertical de gauche
-    
+        #Texte d'instruction
         instruction=QLabel("Veuillez saisir les caractéristiques de votre mot de passe :")
         layoutDeGauche.addWidget(instruction)
 
@@ -68,7 +78,6 @@ class Application(QMainWindow):
         layoutDeGauche.addWidget(ligneHorizontale1)
     
         layoutDeGauche.addSpacing(20)
-
 
 
        
@@ -151,7 +160,11 @@ class Application(QMainWindow):
 
 
     def _afficherGraphique(self,probabilite)->None:
-          
+            """
+            Fonction permettant de générer les deux graphiques représentant les prédictions du modèle
+            Retourne None 
+            
+            """
             noms=['Faible','Moyen','Fort']
             valeurs=[probabilite.get(nom,0)*100 for nom in noms ] 
 
@@ -174,6 +187,8 @@ class Application(QMainWindow):
 
             pixmapGraphique=QPixmap(cheminMatriceConfusion)
 
+
+            #On vérifie que les graphique existe bien avant de les charger
             if pixmapGraphique.isNull():
                 self._labelMatriceConfusion.setText('Le graphique de la matrice de confusion est introuvable')
                 return
@@ -198,8 +213,12 @@ class Application(QMainWindow):
                 )
 
 
+
     def _enregistrerCSV(self,valeurs,confiance,etiquette)->None:
-        
+        """
+        Fonction qui enregistre dans un fichier csv l'historique des prédictions faites par l'utilisateur
+        Retourne None
+        """
         nouveau=not os.path.isfile(cheminCSVHistorique)
         tempsPresent=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with open(cheminCSVHistorique,"a",encoding="utf-8",newline="") as f:
@@ -223,6 +242,12 @@ class Application(QMainWindow):
 
 
     def _ouvrirHistorique(self):
+        """
+        Fonction qui permet de gérer l'ouverture l'accessibilité par l'utilisateur à l'historique 
+        des prédictions du modèle 
+        Retourne None
+        """
+
         fenetre=QDialog(self)
         fenetre.setWindowTitle('Historique des prédictions du modèle')
         fenetre.resize(900,400)
@@ -252,6 +277,12 @@ class Application(QMainWindow):
 
       
     def _fairePrediction(self)->None:
+        """
+        Fonction qui s'occupe de gérer l'action de prédire la robustesse du mot de passe 
+        une fois que l'utilisateur clique sur le bouton prédire
+        Retourne None
+        """
+
         valeurs={}
 
         try:
@@ -279,10 +310,18 @@ class Application(QMainWindow):
         
         confiance=probabilite[etiquette]
 
-        self._resultat.setText(f"Force prédite : {etiquette}\nConfiance du modèle : {confiance:.0%}")
+        duree=self.modele.dureeEntrainement
+        texteDuree=f"{duree} s" if duree is not None else " non disponible"
+        
+
+
+        self._resultat.setText(f"Le mot de passe est prédit comme : {etiquette}\nLe modèle de prédiction est confiant du modèle à : {confiance:.0%}\n Durée de l'entrainement : {texteDuree} ")
         self._resultat.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._resultat.setWordWrap(True)
 
+
+      
+        
         self._afficherGraphique(probabilite)
         self._enregistrerCSV(valeurs,confiance,etiquette)
 

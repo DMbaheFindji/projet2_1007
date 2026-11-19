@@ -7,9 +7,11 @@ import matplotlib.pyplot as plt
 
 class JeuDeDonnees:
     '''
-    Classe responsable de convertir le fichier tsv trouvé sur kaggle en un fichier csv
-    et d'ajouter les carcatéristiques manquantes de notre jeu de donnée dans ce fichier csv.
-
+    Classe responsable de:
+        -Convertir le fichier tsv trouvé sur kaggle en un fichier csv
+        -Extraire des caractéristiques du fichier csv pour en obtenir au moins cinq au total
+        -Vérifier que que le fichier csv de donné ne contienne pas de valeurs eronées ou manquantes
+        -Générer un graphique représentant le jeu de donné de notre fichier csv
     '''
 
     def __init__(self,nomDossier:str,nomFichierTSV:str,nomFichierCSV:str,limiteLigne:int=30000):
@@ -23,8 +25,11 @@ class JeuDeDonnees:
 
     def convertirETdevelopper(self)-> str:
         '''
-        Fonction qui transforme le fichier tsv en fichier csv, ajoute les caractristiques manquantes à notre jeu de donnée
+        Fonction qui transforme le fichier tsv en fichier csv, extrait et ajoute les caractristiques manquantes à notre jeu de donnée
         et génère le fichier csv final
+
+        
+        Retourne une chaîne vide si une erreur lors du processus de transformation du fichier tsv en csv est survenue
         '''
         try:
             lignes_converties=[]
@@ -53,11 +58,11 @@ class JeuDeDonnees:
                     if len(elements)<2:
                         continue
 
-                    #On divise la ligne ne deux partie
+                    #On divise la ligne en deux partie
                     password=elements[0]
                     strength=elements[1]
 
-                    #Extraction des caractéristiques--> J'ai analysé les mots de passe du jeu de donnée pour être en mesure de créer ces caractéristiques
+                    #Extraction des caractéristiques en fonction de caractéristiques observables des mots de passe dans le jeu de donné
                     longueur=len(password)
                     #On parcours le mot et regrade s'il y a des majuscules, chiffres ou carcatères spéciaux
                     nbMajuscule= sum( 1 for c in password if c.isupper())
@@ -88,7 +93,14 @@ class JeuDeDonnees:
 
 
     def triage_ET_charger_Donnee(self,cheminCSV)-> pd.DataFrame:
-      
+
+        """
+        Fonction qui vérifie que le fichier csv généré ne contient pas de valeurs aberrantes 
+        ou manquantes
+        Retourne toujours le tableau pandas df généré par le fichier csv de notre jeu de donnée
+        
+        """
+        
         #On range les infos de donnees.csv dans un tableau virtuel pandas
         df=pd.read_csv(cheminCSV)
         #C'est ce tableau virtuel df(dataframe) que pyhton manipule pour faire le nettoyage du fichier donnees.csv
@@ -119,7 +131,9 @@ class JeuDeDonnees:
     
     def creationGraphique1(self,df: pd.DataFrame)->None:
         '''
-        Gère la création et la sauvegarde du graphique 1
+        Fonction qui gère la création et la sauvegarde du graphique 1
+        Utilise pour entré un tableau pandas (df) pour générer ce graphique
+        Retourne None
         '''
 
         #créer figure
@@ -136,7 +150,7 @@ class JeuDeDonnees:
         plt.xticks(ticks=[0, 1, 2], labels=['0 (Faible)', '1 (Moyen)', '2 (Fort)'], rotation=0)
         plt.grid(axis='y', linestyle='--', alpha=0.7)
         #On met des pointillés au niveau des valeurs en y 
-        #alpha-->C'est la trasnparence
+        #alpha-->C'est la transparence
 
 
         #Enregistrer le fichier image avec savefig()

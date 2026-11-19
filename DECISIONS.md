@@ -2,17 +2,21 @@
 
 
 ### domaine 
-Question : Pourquoi ce sujet ?
-    Nous avons choisi ce sujet,car nous n'avons pas encore eu locasion de travailler sur un projet lié à la cybersécurité et nous aimerions découvrir ce monde de la programmation.
+Question: Quel est notre sujet ?
+    Nous avons décidé de faire un modèle qui prédit la robustesse d'un mot de passe.
+    Donc, l'utilisateur pourra entrer les caractéristiques de son mot de passe à travers l'interface et , en fonction de celles-ci, le modèle sera en mesure de dire si la robustesse du mot de passe est Faible, Moyenne ou Forte.
 
+
+Question : Pourquoi ce sujet ?
+    Nous avons choisi ce sujet,car nous n'avons pas encore eu locasion de travailler sur un projet lié à la cybersécurité et nous aimerions découvrir ce monde de la programmation. Même si nous n'utilisons pas directement les concepts clés de la cybersécurité, la robustesse des mots de passe est un sujet qui nous y initie bienune excellente façon pour nous d'initier ce domaine.
 
 
 Question : Pourquoi ce dataset ?
-    Nous avons choisi ce dataset, car il contient exactement toutes les principales informations dont nous avons besoins(password,strength). De plus, il a une grande quantité de donnée ce qui rendra notre modèle plus précis, car il sera entraîné sur une plus grade base de données.
+    Nous avons choisi ce dataset, car il contient exactement toutes les principales informations dont nous avons besoins(password,strength). De plus, il a une grande quantité de donnée ce qui rendra notre modèle plus précis, car il sera entraîné sur une plus grande base de données.
 
 
 
-Decisions prises:
+
 
 ### Pourquoi scikit-learn ?
 
@@ -48,3 +52,11 @@ Decisions prises:
 - Options envisagées : a finir
 - Choix retenu : PyQt6.
 - Justification : a finir
+
+
+
+
+
+-tests interface
+-evaluation du modele
+-matrice de confusion
