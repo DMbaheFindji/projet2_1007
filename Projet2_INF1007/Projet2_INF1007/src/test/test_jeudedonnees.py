@@ -45,3 +45,6 @@ def test_convertir_fichier_absent_renvoie_chaine_vide(tmp_path):
     jeu = JeuDeDonnees(str(tmp_path), 'inexistant.tsv', 'donnees.csv')
     assert jeu.convertirETdevelopper() == ""
     assert not (tmp_path / 'donnees.csv').exists()
+
+
+    

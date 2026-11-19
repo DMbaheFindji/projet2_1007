@@ -4,6 +4,29 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
+from exception import DonneeInvalideError
+from modele import COLONNES_REQUISES
+
+def lireCsvValide(chemin: str) -> pd.DataFrame:
+    """Lit le CSV et vérifie qu'il est utilisable.
+
+    Reçoit le chemin du fichier CSV. Renvoie le tableau pandas.
+    Lève FileNotFoundError si le fichier n'existe pas, et
+    DonneeInvalideError si le fichier est vide ou s'il manque des colonnes.
+    """
+    if not os.path.isfile(chemin):
+        raise FileNotFoundError(f'Le fichier CSV est introuvable : {chemin}')
+    try:
+        df = pd.read_csv(chemin)
+    except pd.errors.EmptyDataError:
+        raise DonneeInvalideError('Le fichier CSV est vide.') from None
+    if df.empty:
+        raise DonneeInvalideError('Le fichier CSV ne contient aucune ligne.')
+    manquantes = [c for c in COLONNES_REQUISES if c not in df.columns]
+    if manquantes:
+        raise DonneeInvalideError(f'Colonnes manquantes : {manquantes}')
+    return df
+
 
 class JeuDeDonnees:
     '''
@@ -102,7 +125,7 @@ class JeuDeDonnees:
         """
         
         #On range les infos de donnees.csv dans un tableau virtuel pandas
-        df=pd.read_csv(cheminCSV)
+        df=lireCsvValide(cheminCSV)
         #C'est ce tableau virtuel df(dataframe) que pyhton manipule pour faire le nettoyage du fichier donnees.csv
 
         print('Aperçu des données:')

@@ -9,7 +9,8 @@ from sklearn.metrics import accuracy_score
 
 import modele
 from exception import EntreeInvalideError, ModeleNonEntraineError
-from modele import (Modele, calculerReference, chargerMetadonnees,
+from modele import (Modele,
+                    calculerReference, chargerMetadonnees,
                     chargerModele, encoderEntrees, exactitudeNumpy,
                     separerDonnees)
 

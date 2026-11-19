@@ -140,7 +140,7 @@ projet_inf1007/
 - `JeuDeDonnees` : conversion, chargement et exploration des données.
 - `Modele` : entraînement, prédiction et sauvegarde. Attributs protégés (`_arbre`, `_metriques`, `_entraine`), méthode spéciale `__str__`.
 - `Application` : interface, qui **contient** le modèle et les métadonnées (composition).
-- [À COMPLÉTER : classe parente et au moins deux classes enfants qui redéfinissent la même méthode, p. ex. `Variable` → `VariableNumerique` et `VariableCategorielle` avec `valider()`]
+- - **Héritage et polymorphisme** : `Metrique` (classe abstraite) a trois enfants, `Exactitude`, `ExactitudeNumpy` et `F1Macro`, qui redéfinissent chacun la méthode `calculer()`. `Modele.entrainer` les utilise toutes de la même façon, sans savoir comment chacune calcule son score.
 
 **Exceptions** (`exception.py`) : toutes héritent de `ErreurProjet` (qui hérite de `Exception`) :
 - `ModeleNonEntraineError` : prédiction ou sauvegarde avant l'entraînement ;
