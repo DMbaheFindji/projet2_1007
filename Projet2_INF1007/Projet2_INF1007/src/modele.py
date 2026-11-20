@@ -5,6 +5,9 @@ import json
 import os
 
 import joblib
+import matplotlib
+matplotlib.use("Agg")
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -199,9 +202,9 @@ def chronometrer(fonction):
         Retourne Temps d'exécution de la fonction
         """
         @functools.wraps(fonction)
-        def enveloppe(*args):
+        def enveloppe(*args,**kwargs):
             debut=time.time()
-            resultat=fonction(*args)
+            resultat=fonction(*args,**kwargs)
             fin=time.time()
             duree=round(fin-debut,1)
             print("Durée :",duree,"s")
@@ -285,50 +288,7 @@ class Modele:
 
 
 
-    def predire(self, longueur: int, nbMajuscule: int,
-                nbChiffre: int, nbSpecial: int,
-                premierCaractere: str):
-
-        """Prédit la force d'UN seul mot de passe à partir de ses 5 caractéristiques.
-
-        Renvoie un tuple : (étiquette prédite, dictionnaire des probabilités
-        de chaque force). Lève EntreeInvalideError si les entrées sont invalides
-        """
-        
-        # la longuer doit etre au moin 1 sinon mdp impossible vide
-        if longueur < 1:
-            raise EntreeInvalideError(
-                'La longueur doit être au moins 1.'
-            )
-        # chaque compteur de caracteres pas negatif 
-        for nom, valeur in (
-            ('nbMajuscule', nbMajuscule),
-            ('nbChiffre', nbChiffre),
-            ('nbSpecial', nbSpecial)
-        ):
-            if valeur < 0:
-                raise EntreeInvalideError(
-                    f'{nom} ne peut pas être négatif.'
-                )
-        # total peut pas depasser la longueur total
-        if nbMajuscule + nbChiffre + nbSpecial > longueur:
-            raise EntreeInvalideError(
-                'Le total des caractéristiques dépasse la longueur.'
-            )
-       
-        if premierCaractere not in VALEURS_PREMIER_CARACTERE:
-            raise EntreeInvalideError(
-                f'premierCaractere doit valoir {VALEURS_PREMIER_CARACTERE}.'
-            )
-        # constructionn du dataframe sune ligne avec les memem colonnes
-        # que le training pour que le modele reconnaisse
-        entree = pd.DataFrame(
-            [[longueur, nbMajuscule, nbChiffre,
-              nbSpecial, premierCaractere]],
-            columns=COLONNES_ENTREE
-        )
-        #prediction de la classe 0,1,2 grace a predireLot
-        prediction = int(self.predireLot(entree)[0])
+    
 
     def predire(self, longueur: int, nbMajuscule: int,
                 nbChiffre: int, nbSpecial: int,
@@ -394,19 +354,9 @@ class Modele:
                 for c, p in zip(classes, probabilites)
             }
         )       
-        probabilites = self._arbre.predict_proba(
-            encoderEntrees(entree)
-        )[0]
+      
 
-        classes = [int(c) for c in self._arbre.classes_]
-
-        return (
-            ETIQUETTES_FORCE[prediction],
-            {
-                ETIQUETTES_FORCE[c]: float(p)
-                for c, p in zip(classes, probabilites)
-            }
-        )
+    
 
     def sauvegarder(self, df: pd.DataFrame) -> None:
         """Sauvegarde le modèle et ses métadonnées."""

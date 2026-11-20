@@ -1,11 +1,14 @@
 
-import csv 
+
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from exception import DonneeInvalideError
+from exception import DonneeInvalideError,LectureEcritureError
 from modele import COLONNES_REQUISES
+
+
+
 
 def lireCsvValide(chemin: str) -> pd.DataFrame:
     """Lit le CSV et vérifie qu'il est utilisable.
@@ -109,9 +112,8 @@ class JeuDeDonnees:
             print(f'Conversion réussie ! {self.nomFichierCSV} générée avce succès !')
             return self.nomFichierCSV
 
-        except Exception as e:
-            print(f'Une erreur est survenue:{e}')
-            return ""
+        except (OSError,UnicodeDecodeError) as e:
+            raise LectureEcritureError(f'Impossible de convertir le fichier :{e}') from e
         
 
 

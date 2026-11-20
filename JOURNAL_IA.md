@@ -10,6 +10,7 @@ Projet INF1007 — A2026.
 | # | Outil | Ce que nous avons demandé | Réponse reçue | Vérification faite | Décision |
 |---|-------|---------------------------|---------------|--------------------|---------|
 
+
 | 1 | Claude | Quelles métriques d'évaluation pourrions-nous utiliser pour notre modèle de classification de mots de passe ? | Plusieurs métriques ont été proposées, notamment l'exactitude, la précision, le rappel et le F1-score. | Nous avons comparé les métriques proposées à notre problème de classification en trois catégories. Nous avons également vérifié leur fonctionnement dans la documentation de scikit-learn. | Gardé : exactitude f1 macros |
 
 
@@ -20,4 +21,18 @@ Projet INF1007 — A2026.
 | 3 | ChatGPT | Comment éviter le surapprentissage avec un arbre de décision ? | Limiter la profondeur maximale de l'arbre est une façon de réduire le surapprentissage. | Nous avons vérifié le paramètre `max_depth` dans la documentation de `DecisionTreeClassifier`. | Gardé : utilisation de `max_depth = 10`. |
 
 
-4 et 5 
+
+| 4 |ChatGPT|Comment faire pour que dans l'interface ce ne soit pas directement le nom des variables d'entrées écrit, mais des noms plus compréhensible ? |Il suffit d’utiliser un dictionnaire qui associe chaque nom interne (celui du modèle) au nom affiché dans l’interface. Les noms internes ne changent pas, seulement ce que l’utilisateur voit.|Nous sommes allez regarder les notes de cours du cours 1007 chapitre 4 section 4 pour revoir cette structure de donnée pour pouvoir être en mesure de mieux analyser si elle conviendrait dans cette partie du code. |Gardé : Après avoir exécuter le code avec le dictionnaire implémenté, nous nous sommes rendu compte que cela marchait très bien et nous avons décidé de garder cette proposition.
+
+
+| 5 | ChatGPT| Dans une application qui utiliserait un modèle entraîné, comment pourrions-nous intégrer l'utilisation d'un décodeur ?| Il nous a conseillé mesurer le temps d'entraînement du modèle. | Après avoir relu l'énoncé de ce projet, nous avons remarqué qu'à la page 4, le chronomètre était bel et bien une des propositions fournit. Donc, nous avons fait la fonction, nous l'avons testé et nous avons vu que tout marchait bien.| Gardé : Nous avons alors décidé de garder cette proposition .
+
+
+| 6 | Claude | Quel serait le meilleur moyen d'ajouter une image dans l'interface si nous utilisons PyQt6 ?|Il nous a conseillé d'utiliser QPixmap.| Nous sommes allé regarder la documenttation de QPixmap pour en apprendre plus sur cette classe. 
+Lien : https://doc.qt.io/qt-6/qpixmap.html
+|Gardé: nous avons décidé de gardé cette idée et d'utiliser QPixmap pour l'intégration de nos graphiques dans l'interface.
+
+| 7 | ChatGPT | Comment m'assurer de prévoir toutes les exception dans la classe l'interface lorsque l'utilisateur saisie quelque chose d'invalide ?| Il nous a conseillé d' utiliser un valueError .| Nous avons relu les consignes de l'énoncé et avons vu qu'il fallit essayer d'utiliser des exceptionn spécial.
+|Gardé:Nous avons décider de spécialiser nos exception plus que de simple Value Error
+
+

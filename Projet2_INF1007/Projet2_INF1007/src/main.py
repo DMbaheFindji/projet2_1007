@@ -76,15 +76,13 @@ def premierInstallation()-> None:
     #Si le fichier donnees.csv n'existe pas on appèle une seul fois la méthode qui doit le créer
         if not os.path.isfile(CHEMIN_CSV):
             preparer_donnee()
-            if not os.path.isfile(CHEMIN_CSV):
-                return #Si la preparationd es données a echouée on sort de la methode
-    #si la préparationd es données a reussi on execute l'entrainement
+
         df=lireCsvValide(CHEMIN_CSV)
-    except DonneeInvalideError as e:
-        print(f'Données invalides : {e}')
+    except (FileNotFoundError,DonneeInvalideError) as e:
+        print(f'Erreur lors de la préparation des données : {e}')
         return
     #si la préparation des données a reussi on execute l'entrainement
-    entrainer_et_sauvegarder(pd.read_csv(CHEMIN_CSV))
+    entrainer_et_sauvegarder(df)
 
 
 
@@ -95,15 +93,20 @@ def ouvrirApplication()-> None:
     """
     
     from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QPushButton,QLineEdit,QHBoxLayout,QFrame,QFormLayout,QComboBox
+    application = QApplication(sys.argv)
 
     from interface import Application
 
-    #Chargement du modèele et des métadonnees
-    modele=chargerModele(Modele,CHEMIN_MODELE)
-    metadonnees=chargerMetadonnees()
+    try:
+        #Chargement du modèele et des métadonnees
+        modele=chargerModele(Modele,CHEMIN_MODELE)
+        metadonnees=chargerMetadonnees()
 
+    except FileNotFoundError as e:
+        print(f"Impossible d'ouvrir l'application :{e}")
+        return 
+   
     # Ouverture de l'interface
-    application = QApplication(sys.argv)
     fenetre = Application(modele,metadonnees)
     fenetre.show()
     

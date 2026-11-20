@@ -15,3 +15,6 @@ class DonneeInvalideError(ErreurProjet, ValueError):
 
 class EntreeInvalideError(ErreurProjet, ValueError):
     """Les caractéristiques données à predire() sont hors des valeurs permises."""
+
+class LectureEcritureError(ErreurProjet,OSError):
+    """Une lecture ou une écriture du fichier à échoué (conversion TSV vers CSV,etc.)."""

@@ -31,8 +31,8 @@
     },
     "nbSpecial": {
       "type": "numerique",
-      "min": 3,
-      "max": 109
+      "min": 0,
+      "max": 67
     },
     "premierCaractere": {
       "type": "categorielle",
@@ -44,25 +44,25 @@
     }
   },
   "metriques": {
-    "exactitude": 0.9341666666666667,
-    "f1Macro": 0.9345725260379155,
-    "exactitudeNumpy": 0.9341666666666667,
+    "exactitude": 0.9353333333333333,
+    "f1Macro": 0.9357356564784028,
+    "exactitudeNumpy": 0.9353333333333333,
     "exactitudeReference": 0.33416666666666667,
     "matriceConfusion": [
       [
-        1740,
-        258,
+        1736,
+        262,
         0
       ],
       [
-        52,
-        1925,
-        28
+        53,
+        1934,
+        18
       ],
       [
         0,
-        57,
-        1940
+        55,
+        1942
       ]
     ]
   },

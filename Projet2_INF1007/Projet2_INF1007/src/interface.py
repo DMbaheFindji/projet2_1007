@@ -31,6 +31,16 @@ cheminMatriceConfusion = os.path.join(os.path.dirname(os.path.abspath(__file__))
 cheminGraphique = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "modeles", "graphique_prediction.png")
 cheminCSVHistorique=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "historiqueFolder", "historique.csv")
 
+#Dictionnaire pour avoir les bons noms affichés dans l'interface
+NOMS_AFFICHES={
+    'longueur':'Longueur du mot de passe',
+    'nbMajuscule':'Nombre de majuscule',
+    'nbChiffre':'Nombre de chiffre',
+    'nbSpecial':'Nombre de caractères spéciaux',
+    'premierCaractere':'Premier caractère'
+}
+
+
 
 class Application(QMainWindow):
 
@@ -96,7 +106,7 @@ class Application(QMainWindow):
                 champ.addItems(information['valeurs'])
            
             self._champ[nom]=champ
-            formulaire.addRow(nom,champ)
+            formulaire.addRow(NOMS_AFFICHES.get(nom,nom),champ)
         layoutDeGauche.addLayout(formulaire)
 
 
@@ -178,7 +188,9 @@ class Application(QMainWindow):
             plt.ylim(0,100)
             plt.savefig(cheminGraphique,bbox_inches="tight")
             plt.close()
-          
+
+
+        
           
           
           
@@ -297,8 +309,13 @@ class Application(QMainWindow):
             for nom, champ in self._champ.items():
                 
                 if isinstance(champ,QLineEdit):
-                    valeurs[nom]=int(champ.text())
+                   
+                   
+                    try:
+                        valeurs[nom]=int(champ.text())
 
+                    except ValueError:
+                        raise EntreeInvalideError(f'{NOMS_AFFICHES.get(nom,nom)}: Entrer un nombre entier !')
                 else:
                     valeurs[nom]=champ.currentText()
 
@@ -312,9 +329,7 @@ class Application(QMainWindow):
         except(EntreeInvalideError,ModeleNonEntraineError) as e:
             self._resultat.setText(str(e))
             return
-        except ValueError:
-            self._resultat.setText("Veuillez entrer un nombre entier dans chaque champ.")
-            return 
+        
         
         confiance=probabilite[etiquette]
 
