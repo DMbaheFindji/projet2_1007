@@ -83,8 +83,8 @@ L'arbre fait presque trois fois mieux que la référence . Le calcul NumPy de l'
 Prérequis : Python 3.12.9 
 
 ```bash
-git clone [À COMPLÉTER : URL du dépôt GitHub]
-cd [À COMPLÉTER : nom du dossier]
+git clone https://github.com/DMbaheFindji/projet2_1007.git
+cd projet2_1007
 python -m venv .venv
 # Windows : .venv\Scripts\activate    |    macOS/Linux : source .venv/bin/activate
 pip install -r requirements.txt
