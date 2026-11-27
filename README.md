@@ -20,7 +20,7 @@ Un modèle simple (arbre de décision) estime la force d'un mot de passe (Faible
 - **Modifications apportées** : le fichier brut `production.tsv` a été limité à 30 000 lignes et converti au format CSV (`donnees.csv`) par la classe `JeuDeDonnees`. Les caractéristiques `longueur`, `nbMajuscule`, `nbChiffre`, `nbSpecial` et `premierCaractere` ont été calculées à partir de chaque mot de passe.
 
 
-- **Emplacement du fichier** : [À COMPLÉTER : le jeu de données est-il dans `donneesFolder/` du dépôt (moins de 25 Mo et redistribuable) ou faut-il le télécharger ? Si oui, indiquer les étapes.]
+- **Emplacement du fichier** : Le jeu de données (donnees.csv) est dans `donneesFolder/`.
 
 
 - **Données personnelles** : le jeu de données ne contient aucunes informations personelles
@@ -72,7 +72,7 @@ L'arbre fait presque trois fois mieux que la référence . Le calcul NumPy de l'
 -**Limites** :
 - Les erreurs se font surtout entre classes voisines : 258 mots de passe Faibles sont prédits Moyens, et le modèle ne confond jamais Faible et Fort. La classe Faible est la moins bien reconnue.
 - Le modèle ne voit que cinq caractéristiques (longueur, majuscules, chiffres, caractères spéciaux, premier caractère), pas le contenu du mot de passe. Il ne peut donc pas détecter un mot courant ou prévisible.
-- Un score aussi élevé suggère que l'étiquette de force est fortement liée à ces caractéristiques. [À COMPLÉTER : confirmer avec la description du jeu de données Kaggle comment `strength` a été calculée.]
+- Un score aussi élevé suggère que l'étiquette de force est fortement liée à ces caractéristiques. 
 - Un seul découpage entraînement/test (graine 42) a été utilisé, sans validation croisée.
 
 
@@ -110,7 +110,7 @@ Technologie : **PyQt6** (application locale, classe `Application` héritant de `
 - **Prédiction** : le bouton « Prédire la robustesse du mot de passe » affiche la force prédite et la confiance du modèle en pourcentage.
 - **Graphiques Matplotlib** : après chaque prédiction, deux images produites avec `savefig` sont affichées dans la fenêtre : la probabilité de chaque force pour la saisie courante, et la réussite du modèle par force sur l'ensemble de test.
 - **Historique** : chaque prédiction est ajoutée à `historiqueFolder/historique.csv`. Le bouton « Voir l'historique » l'affiche dans un tableau.
-- **Avertissement** : [À COMPLÉTER : texte de l'avertissement si vous l'ajoutez]
+
 
 ## Structure du code
 
@@ -149,7 +149,8 @@ projet_inf1007/
 
 ## Outil du chapitre 7
 
-[À COMPLÉTER : une phrase. Options présentes dans votre code : une `lambda` (formateur d'axe en pourcentage dans `modele.py`) ou des expressions génératrices (`sum(1 for c in password if ...)` dans `JeuDeDonnees.py`).]
+Comme outil du chapitre 7, nous avons utilisé lambda dans l'interface pour trier les prédictions de l'historique du plus ancien au plus récent.
+De plus, nous avons également utilisé un décorateur qui a pour but de chronométrer le temps d'exécution de la fonction ''prédire'' .
 
 ## Tests et couverture
 
@@ -162,6 +163,7 @@ projet_inf1007/
 - pandas : [documentation panda](https://pandas.pydata.org/docs/)
 - scikit-learn : [train_test_split](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html)
 - PyQt6 : [Documentation PyQt6](https://www.riverbankcomputing.com/static/Docs/PyQt6/)
+- PySide6 : [Documentation PySide6](https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/index.html#module-PySide6.QtWidgets)
 
 ## Autres documents
 

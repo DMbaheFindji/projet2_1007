@@ -117,7 +117,7 @@ class JeuDeDonnees:
         
 
 
-    def triage_ET_charger_Donnee(self,cheminCSV)-> pd.DataFrame:
+    def triage_ET_charger_Donnee(self,cheminCSV:str)-> pd.DataFrame:
 
         """
         Fonction qui vérifie que le fichier csv généré ne contient pas de valeurs aberrantes 
@@ -129,6 +129,16 @@ class JeuDeDonnees:
         #On range les infos de donnees.csv dans un tableau virtuel pandas
         df=lireCsvValide(cheminCSV)
         #C'est ce tableau virtuel df(dataframe) que pyhton manipule pour faire le nettoyage du fichier donnees.csv
+
+        return df
+
+    
+
+    def affichageAppercu(self,df:pd.DataFrame)->None:
+        """
+        Fonction qui affiche dans la cosnole un résumé du tableau pandas généré: apperçu, types
+        valeurs manquantes,statistiques et nombres dedoublons
+        """ 
 
         print('Aperçu des données:')
         print(df.head())
@@ -150,7 +160,6 @@ class JeuDeDonnees:
         print(f'Nombre de lignes doubles:{doublons}')
         #Il y a 0 ligne double
 
-        return df
 
 
     

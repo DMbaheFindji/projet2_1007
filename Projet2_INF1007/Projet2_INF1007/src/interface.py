@@ -93,7 +93,7 @@ class Application(QMainWindow):
        
         #Gestion des informations provenant du fichier metadonnees
         formulaire=QFormLayout()
-        self._champ={}
+        self._champ={}#Création du dictionnaire champ qui est un attribut de la classe Application et qui va associer le nom de la variable à ce que l"utilisateur va entrer
 
         for nom in self._metadonnees['colonnesEntree']:
             information=self._metadonnees['variables'][nom]
@@ -309,17 +309,18 @@ class Application(QMainWindow):
         try:
             for nom, champ in self._champ.items():
                 
-                if isinstance(champ,QLineEdit):
+                if isinstance(champ,QLineEdit):#Si c'est un champ où il faut entrer (saisir) quelque chose 
                    
                    
                     try:
-                        valeurs[nom]=int(champ.text())
+                        valeurs[nom]=int(champ.text())#On change le texte en nombre
 
-                    except ValueError:
+                    except ValueError:#Si l'utilisateur n'entre rien ou entre une lettre à la place d'un nombre cela lèvera une erreur
                         raise EntreeInvalideError(f'{NOMS_AFFICHES.get(nom,nom)}: Entrer un nombre entier !')
-                else:
+                else:#Dans le cas ou c'est un choix a sélectionner --> Exemple le premier caractère
                     valeurs[nom]=champ.currentText()
 
+            #On récupère la force du modèle et son niveau de confiance
             etiquette,probabilite=self.modele.predire(
                 valeurs['longueur'],
                 valeurs['nbMajuscule'],
@@ -331,7 +332,7 @@ class Application(QMainWindow):
             self._resultat.setText(str(e))
             return
         
-        
+        #Stocker le niveau de confiance du modèle dans une variable
         confiance=probabilite[etiquette]
 
         duree=self.modele.dureeEntrainement
