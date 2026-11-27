@@ -1,6 +1,8 @@
 """Tests de la classe JeuDeDonnees (conversion TSV -> CSV et caractéristiques)."""
 import matplotlib
 matplotlib.use("Agg")
+import pytest
+from exception import LectureEcritureError
 
 import pandas as pd
 
@@ -40,11 +42,10 @@ def test_convertir_respecte_la_limite_de_lignes(tmp_path):
     df = pd.read_csv(jeu.convertirETdevelopper())
     assert len(df) == 3
 
-
-def test_convertir_fichier_absent_renvoie_chaine_vide(tmp_path):
+def test_convertir_fichier_absent_leve_exception(tmp_path):
     jeu = JeuDeDonnees(str(tmp_path), 'inexistant.tsv', 'donnees.csv')
-    assert jeu.convertirETdevelopper() == ""
+    with pytest.raises(LectureEcritureError):
+        jeu.convertirETdevelopper()
     assert not (tmp_path / 'donnees.csv').exists()
-
 
     
