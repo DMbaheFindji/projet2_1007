@@ -35,4 +35,6 @@ Lien : https://doc.qt.io/qt-6/qpixmap.html
 | 7 | ChatGPT | Comment m'assurer de prévoir toutes les exception dans la classe l'interface lorsque l'utilisateur saisie quelque chose d'invalide ?| Il nous a conseillé d' utiliser un valueError .| Nous avons relu les consignes de l'énoncé et avons vu qu'il fallit essayer d'utiliser des exceptionn spécial.
 |Gardé:Nous avons décider de spécialiser nos exception plus que de simple Value Error
 
+| 8 | Claude | Comment vérifier que notre projet est prêt à être remis et corriger les problèmes trouvés ? | Il a proposé de tester un clone neuf, de placer les fichiers à la racine du dépôt et de modifier un test pour qu'il attende `LectureEcritureError`. | Nous avons lancé `python -m pytest` (15 tests réussis) et vérifié que la CI était verte sur GitHub. | Gardé : nous avons réorganisé le dépôt et modifié le test. |
+
 
