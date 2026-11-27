@@ -236,6 +236,7 @@ class Application(QMainWindow):
         with open(cheminCSVHistorique,"a",encoding="utf-8",newline="") as f:
             ecrivain=csv.writer(f)
 
+            #Si un nouveau fichier historique vient d'être généré on refait l'en tête
             if nouveau:
                 ecrivain.writerow([
                     "dateHeure","longueur","nombre de Majuscule","nombre de Chiffre","nombre de caractères Speciaux","premier Caractere","prediction","confiance"

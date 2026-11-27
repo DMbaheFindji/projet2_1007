@@ -5,8 +5,8 @@ import pandas as pd
 import os
 
 from exception import DonneeInvalideError
-from modele import (Modele,chargerModele, cheminMatriceConfusion,
-                    sauvegarderMatriceConfusion, separerDonnees, cheminMetadonnees,chargerMetadonnees)
+from modele import (Modele,chargerModele, cheminMatriceConfusion,cheminHeatMap,
+                    sauvegarderMatriceConfusion, separerDonnees, cheminMetadonnees,chargerMetadonnees,sauvegarderHeatmapConfusion)
 
 from JeuDeDonnees import JeuDeDonnees, lireCsvValide
 
@@ -43,6 +43,7 @@ def preparer_donnee()->None:
 
         #Création du graphique1
         monJeuDonnee.creationGraphique1(df)
+        
 
 
 
@@ -63,7 +64,9 @@ def entrainer_et_sauvegarder(df: pd.DataFrame) -> None:
     print(f"F1 macro : {metriques['f1Macro']:.3f}")
 
     modele.sauvegarder(df)
-    modele.sauvegarderGraphique(cheminMatriceConfusion)
+    modele.sauvegarderGraphique(cheminMatriceConfusion,cheminHeatMap)
+    
+  
 
 
 
@@ -121,7 +124,7 @@ def main() -> None:
     Retourne None
     """
 
-    #on fait la première installation seulement si le fichier donnees.csv n'existe pas 
+    #on fait la première installation seulement si le modèele  n'existe pas 
     if not os.path.isfile(CHEMIN_MODELE):
         premierInstallation()
 
@@ -134,6 +137,7 @@ def main() -> None:
 #On exécute tout 
 if __name__ == "__main__":
     main()
+    
 
 
 

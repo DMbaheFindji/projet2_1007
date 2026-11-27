@@ -33,7 +33,9 @@ cheminFichierCsv = os.path.join(DOSSIER_DONNEES, 'donnees.csv') # chemin complet
 cheminModele = os.path.join(DOSSIER_MODELES, 'modele.joblib') # le modele entrainee 
 cheminMetadonnees = os.path.join(DOSSIER_MODELES, 'metadonnees.json') # 
 #cheminGraphiqueExploration = os.path.join(DOSSIER_DONNEES, 'graphique_exploration.png')
-cheminMatriceConfusion = os.path.join(DOSSIER_MODELES, 'matrice_confusion.png') # pour le gra[hique 2]
+cheminMatriceConfusion = os.path.join(DOSSIER_MODELES, 'matrice_confusion.png') # pour le graphique 2
+cheminHeatMap= os.path.join(DOSSIER_MODELES, 'heatMap.png') # pour le graphique3
+
 
 graineAleatoire = 42 # pour que les reultat sois reproductible
 
@@ -103,7 +105,7 @@ def exactitudeNumpy(yReel: pd.Series, yPredit: np.ndarray) -> float:
     return float(np.mean(comparaison))
 
 
-#TODO: changer la matrice 
+
 def sauvegarderMatriceConfusion(yTest: pd.Series, yPredit: np.ndarray, chemin: str) -> None:
 
     """Enregistre avec savefig un graphique en barres de la réussite par force.
@@ -202,7 +204,7 @@ def chronometrer(fonction):
         Retourne Temps d'exécution de la fonction
         """
         @functools.wraps(fonction)
-        def enveloppe(*args,**kwargs):
+        def enveloppe(*args,**kwargs):#args et kwargs permet de dire à la fonction enveloppe d'accepter n'importe quel argument et de les transmettre tel quel à la vrai fonction
             debut=time.time()
             resultat=fonction(*args,**kwargs)
             fin=time.time()
@@ -400,7 +402,7 @@ class Modele:
         with open(cheminMetadonnees, 'w', encoding='utf-8') as f:
             json.dump(metadonnees, f, indent=2, ensure_ascii=False)
 
-    def sauvegarderGraphique(self, chemin: str) -> None:
+    def sauvegarderGraphique(self, chemin: str,cheminHeatmap:str) -> None:
         """Sauvegarde le graphique de la matrice de confusion."""
 
         if not self._entraine:
@@ -411,6 +413,12 @@ class Modele:
         sauvegarderMatriceConfusion(
             self._yTest, self._yPredit, chemin
         )
+        sauvegarderHeatmapConfusion(
+                    self._yTest, self._yPredit, cheminHeatmap
+                )
+
+
+        
 # ---- Propriétés en lecture seule ----
     @property
     def metriques(self) -> dict:
@@ -436,6 +444,8 @@ class Modele:
             f'exactitude={exactitude})'
         )
 
+    
+#C'es deux fonctions(chargerModele et chargerMetadonnees) permettent de recharger le fichier métadonnée et le modèle pour ne pas avoir à le réentraîner
 def chargerMetadonnees(chemin:str=cheminMetadonnees)-> dict:
     """
     Cette fonction ouvre et lit le fichier metadonnee.json
