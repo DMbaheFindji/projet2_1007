@@ -69,7 +69,7 @@ Le jeu de données est déjà propre : aucune correction n'a été nécessaire. 
 
 L'arbre fait presque trois fois mieux que la référence . Le calcul NumPy de l'exactitude donne exactement la même valeur que scikit-learn (0,9342), ce qui est vérifié dans un test.
 
--**Limites** :
+**Limites** :
 - Les erreurs se font surtout entre classes voisines : 258 mots de passe Faibles sont prédits Moyens, et le modèle ne confond jamais Faible et Fort. La classe Faible est la moins bien reconnue.
 - Le modèle ne voit que cinq caractéristiques (longueur, majuscules, chiffres, caractères spéciaux, premier caractère), pas le contenu du mot de passe. Il ne peut donc pas détecter un mot courant ou prévisible.
 - Un score aussi élevé suggère que l'étiquette de force est fortement liée à ces caractéristiques. 
@@ -96,9 +96,9 @@ Au **premier lancement**, `main.py` convertit le TSV en CSV, produit le graphiqu
 Tests et couverture :
 
 ```bash
-pytest
-coverage run -m pytest
-coverage report
+python -m pytest
+python -m coverage run -m pytest
+python -m coverage report
 ```
 
 ## Interface graphique
@@ -114,7 +114,6 @@ Technologie : **PyQt6** (application locale, classe `Application` héritant de `
 
 ## Structure du code
 
-```
 ```
 projet_inf1007/
 ├── README.md
@@ -136,21 +135,27 @@ projet_inf1007/
         ├── test_jeudedonnees.py
         └── test_modele.py
 
+```   
+
 **Classes**
+
 - `JeuDeDonnees` : conversion, chargement et exploration des données.
 - `Modele` : entraînement, prédiction et sauvegarde. Attributs protégés (`_arbre`, `_metriques`, `_entraine`), méthode spéciale `__str__`.
 - `Application` : interface, qui **contient** le modèle et les métadonnées (composition).
-- - **Héritage et polymorphisme** : `Metrique` (classe abstraite) a trois enfants, `Exactitude`, `ExactitudeNumpy` et `F1Macro`, qui redéfinissent chacun la méthode `calculer()`. `Modele.entrainer` les utilise toutes de la même façon, sans savoir comment chacune calcule son score.
+- **Héritage et polymorphisme** : `Metrique` (classe abstraite) a trois enfants, `Exactitude`, `ExactitudeNumpy` et `F1Macro`, qui redéfinissent chacun la méthode `calculer()`. `Modele.entrainer` les utilise toutes de la même façon, sans savoir comment chacune calcule son score.
 
 **Exceptions** (`exception.py`) : toutes héritent de `ErreurProjet` (qui hérite de `Exception`) :
 - `ModeleNonEntraineError` : prédiction ou sauvegarde avant l'entraînement ;
 - `DonneeInvalideError` : CSV vide ou colonnes manquantes ;
 - `EntreeInvalideError` : caractéristiques hors des valeurs permises.
+- `LectureEcritureError` : échec de la lecture ou de la conversion d'un fichier ;
+
+
 
 ## Outil du chapitre 7
 
 Comme outil du chapitre 7, nous avons utilisé lambda dans l'interface pour trier les prédictions de l'historique du plus ancien au plus récent.
-De plus, nous avons également utilisé un décorateur qui a pour but de chronométrer le temps d'exécution de la fonction ''prédire'' .
+De plus, nous avons également utilisé un décorateur qui a pour but de chronométrer le temps d'exécution de la fonction  `prédire`.
 
 ## Tests et couverture
 
@@ -160,7 +165,7 @@ De plus, nous avons également utilisé un décorateur qui a pour but de chronom
 
 ## Documentation consultée
 
-- pandas : [documentation panda](https://pandas.pydata.org/docs/)
+- pandas : [documentation pandas](https://pandas.pydata.org/docs/)
 - scikit-learn : [train_test_split](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html)
 - PyQt6 : [Documentation PyQt6](https://www.riverbankcomputing.com/static/Docs/PyQt6/)
 - PySide6 : [Documentation PySide6](https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/index.html#module-PySide6.QtWidgets)
